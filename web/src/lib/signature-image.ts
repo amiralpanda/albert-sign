@@ -11,7 +11,7 @@ export async function ensureSignatureFont(): Promise<void> {
 export function renderTypedSignatureImage(
   text: string,
   width = 560,
-  height = 112,
+  height = 128,
 ): string {
   const canvas = document.createElement('canvas')
   const dpr = 2
@@ -28,15 +28,23 @@ export function renderTypedSignatureImage(
   let fontSize = 48
   ctx.fillStyle = '#18181b'
   ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
+  ctx.textBaseline = 'alphabetic'
 
-  const maxWidth = width - 40
+  const maxWidth = width - 48
+  const padY = 16
   do {
     ctx.font = `400 ${fontSize}px ${CURSIVE_FONT}`
     fontSize -= 2
   } while (fontSize > 24 && ctx.measureText(display).width > maxWidth)
 
-  ctx.fillText(display, width / 2, height / 2)
+  const metrics = ctx.measureText(display)
+  const ascent = metrics.actualBoundingBoxAscent || fontSize * 0.85
+  const descent = metrics.actualBoundingBoxDescent || fontSize * 0.35
+  const textBlock = ascent + descent
+  const y =
+    padY + ascent + Math.max(0, (height - padY * 2 - textBlock) / 2)
+
+  ctx.fillText(display, width / 2, y)
   return canvas.toDataURL('image/png')
 }
 

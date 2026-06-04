@@ -303,10 +303,10 @@ export function ContractSignPage() {
               </div>
 
               {signatureMode === 'type' ? (
-                <div className="rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 h-28 flex items-center justify-center px-4 overflow-hidden">
+                <div className="rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 min-h-[7.5rem] py-4 flex items-center justify-center px-6">
                   {signerName.trim() ? (
                     <p
-                      className="text-[2rem] leading-none text-zinc-900 truncate max-w-full"
+                      className="text-[2rem] leading-[1.35] text-zinc-900 truncate max-w-full"
                       style={{ fontFamily: '"Dancing Script", cursive' }}
                     >
                       {signerName.trim()}
