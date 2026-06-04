@@ -25,7 +25,7 @@
       "includeFiles": "methodology/templates/**,config/**"
     },
     "api/signing-handler.ts": {
-      "maxDuration": 30,
+      "maxDuration": 60,
       "memory": 1024,
       "includeFiles": "methodology/templates/**,config/**"
     }

@@ -122,8 +122,6 @@ signingRouter.post('/requests', async (req, res) => {
       documentSnapshot: snapshot,
     })
 
-    schedulePreviewPdf(request)
-
     const signUrl = buildSignUrl(request.token)
     let emailResult: { sent: boolean; error?: string } = { sent: false }
 
@@ -154,6 +152,9 @@ signingRouter.post('/requests', async (req, res) => {
       signUrl,
       invitationEmail: emailResult,
     })
+
+    // Preview PDF after response (avoid Vercel timeout on POST /requests)
+    setImmediate(() => schedulePreviewPdf(request))
   } catch (error) {
     console.error('Error creating signing request:', error)
     res.status(500).json({ error: 'Failed to create signing request' })
