@@ -3,6 +3,7 @@ import {
   getDocumentContextForRequest,
   getRequestByToken,
   updateSigningRequest,
+  getSigningPublicBaseUrl,
 } from './signing-store.js'
 import { blobGetPreviewPdfUrl, blobPutPreviewPdf } from './signing-blob-pdf.js'
 import { scheduleBackground } from './signing-background.js'
@@ -12,7 +13,7 @@ export async function resolvePreviewPdfUrl(request: SigningRequest): Promise<str
   return blobGetPreviewPdfUrl(request.token)
 }
 
-/** Generate unsigned contract PDF and store on Blob (Puppeteer — runs in background). */
+/** Generate unsigned contract PDF and store on Blob (Puppeteer). */
 export async function generatePreviewPdf(request: SigningRequest): Promise<string | null> {
   const fresh = (await getRequestByToken(request.token)) ?? request
   const existing = await resolvePreviewPdfUrl(fresh)
@@ -48,10 +49,43 @@ export async function generatePreviewPdf(request: SigningRequest): Promise<strin
   }
 }
 
+async function triggerPreviewJob(token: string): Promise<void> {
+  const base = getSigningPublicBaseUrl()
+  const secret = process.env.SIGNING_JOB_SECRET?.trim()
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (secret) headers['x-signing-job'] = secret
+
+  const res = await fetch(`${base}/api/signing/preview/${token}`, {
+    method: 'POST',
+    headers,
+    body: '{}',
+  })
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Preview job HTTP ${res.status}: ${text}`)
+  }
+}
+
 export function schedulePreviewPdf(request: SigningRequest): void {
   if (request.previewStatus === 'ready' && request.previewPdfUrl) return
+
   request.previewStatus = 'pending'
   void updateSigningRequest(request).then(() => {
-    scheduleBackground(() => generatePreviewPdf(request))
+    scheduleBackground(async () => {
+      try {
+        if (process.env.VERCEL) {
+          await triggerPreviewJob(request.token)
+        } else {
+          await generatePreviewPdf(request)
+        }
+      } catch (err) {
+        console.error('schedulePreviewPdf failed:', err)
+        const fresh = await getRequestByToken(request.token)
+        if (fresh) {
+          fresh.previewStatus = 'failed'
+          await updateSigningRequest(fresh)
+        }
+      }
+    })
   })
 }
