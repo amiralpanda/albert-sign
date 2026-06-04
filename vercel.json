@@ -9,13 +9,17 @@
       "maxDuration": 10,
       "memory": 128
     },
-    "api/[...path].ts": {
+    "api/signing-handler.ts": {
       "maxDuration": 60,
       "memory": 2048,
       "includeFiles": "methodology/templates/**,config/**"
     }
   },
   "rewrites": [
+    {
+      "source": "/api/signing/:path*",
+      "destination": "/api/signing-handler"
+    },
     {
       "source": "/((?!api/).*)",
       "destination": "/sign.html"
