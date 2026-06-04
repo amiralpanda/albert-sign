@@ -20,7 +20,7 @@ export async function handleSigningPublicGet(
 
     const active = await ensureRequestActive(request)
     if (!active.ok) {
-      res.status(410).json({ error: active.error })
+      res.status(410).json({ error: active.ok === false ? active.error : 'Lien expiré' })
       return
     }
 

@@ -41,7 +41,7 @@ async function finalizeSignature(params: {
   const ctx = getDocumentContextForRequest(request)
   if (!ctx) throw new Error('Document context missing')
 
-  const email = signerEmail.trim().toLowerCase()
+  const email = params.signerEmail.trim().toLowerCase()
   const templateName = request.documentSnapshot?.templateName ?? ctx.doc.templateName
   const locale = resolveSigningLocale(templateName)
   const signedDate = formatSigningDate(new Date(), locale)
@@ -163,7 +163,7 @@ export async function handleSigningCompletePost(
 
     const active = await ensureRequestActive(request)
     if (!active.ok) {
-      res.status(410).json({ error: active.error })
+      res.status(410).json({ error: active.ok === false ? active.error : 'Lien expiré' })
       return
     }
 
