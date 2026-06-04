@@ -18,7 +18,7 @@ export async function launchBrowser() {
     })
   }
 
-  const puppeteer = await import('puppeteer')
+  const puppeteer = await import('puppeteer-core')
   const opts: Record<string, unknown> = { headless: true }
   if (existsSync(CHROME_PATH)) {
     opts.executablePath = CHROME_PATH

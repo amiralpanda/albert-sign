@@ -1,7 +1,7 @@
 import { readFileSync, existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
-import { atomePut } from './lib/atome-api.js'
+import { atomePut } from '../lib/atome-api.js'
 import { resolveDocumentType } from './document-type.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))

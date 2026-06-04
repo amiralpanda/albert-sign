@@ -233,7 +233,7 @@ signingRouter.get('/:token', async (req, res) => {
     if (!request) return res.status(404).json({ error: 'Lien invalide' })
 
     const active = await ensureRequestActive(request)
-    if (!active.ok) return res.status(410).json({ error: active.error })
+    if (!active.ok) return res.status(410).json({ error: 'error' in active ? active.error : 'Expired' })
 
     const ctx = getDocumentContextForRequest(request)
     if (!ctx) return res.status(404).json({ error: 'Document not found' })
@@ -282,7 +282,7 @@ signingRouter.post('/:token/sign', async (req, res) => {
     if (!request) return res.status(404).json({ error: 'Lien invalide' })
 
     const active = await ensureRequestActive(request)
-    if (!active.ok) return res.status(410).json({ error: active.error })
+    if (!active.ok) return res.status(410).json({ error: 'error' in active ? active.error : 'Expired' })
 
     const ctx = getDocumentContextForRequest(request)
     if (!ctx) return res.status(404).json({ error: 'Document not found' })

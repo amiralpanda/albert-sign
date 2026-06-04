@@ -14,7 +14,7 @@ import {
   atomePost,
   resolveAtomeKey,
   getAtomeBaseUrl,
-} from './lib/atome-api.js'
+} from '../lib/atome-api.js'
 
 export { atomePost }
 
