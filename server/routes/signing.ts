@@ -3,7 +3,7 @@ import { appendFileSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { hashDocument, renderDocumentHtml } from '../services/document-hash.js'
-import { documentPdfFilename } from '../services/document-pdf.js'
+import { documentPdfFilename } from '../lib/document-filename.js'
 import { requiresSignatureForTemplate } from '../services/document-type.js'
 import {
   buildSignUrl,
