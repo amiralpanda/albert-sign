@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Contrat de Design Partnership — {{clientName}}</title>
+  <style>
+    @page {
+      size: A4;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Georgia", "Times New Roman", serif;
+      font-size: 11pt;
+      line-height: 1.6;
+      color: #1a1a1a;
+      background: white;
+    }
+
+    .content {
+      padding: 0 20mm;
+    }
+
+    h1, h2, h3, .article-title, .sub-article-title, .annexe-header {
+      font-family: "Helvetica Neue", "Arial", "Helvetica", sans-serif;
+    }
+
+    h1 {
+      font-size: 18pt;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 2em;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      font-size: 12pt;
+      font-weight: bold;
+      margin-top: 1.8em;
+      margin-bottom: 0.6em;
+      text-transform: uppercase;
+    }
+
+    h3 {
+      font-size: 11pt;
+      font-weight: bold;
+      margin-top: 1.4em;
+      margin-bottom: 0.5em;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 2em;
+    }
+
+    .logo img {
+      width: 48px;
+      height: auto;
+    }
+
+    p {
+      margin-bottom: 0.8em;
+      text-align: justify;
+    }
+
+    .parties {
+      margin-bottom: 2em;
+    }
+
+    .party {
+      margin-bottom: 1.5em;
+    }
+
+    .party-label {
+      font-style: italic;
+      margin-top: 0.5em;
+    }
+
+    .variable {
+      background: #fff3cd;
+      padding: 0 3px;
+      border-radius: 2px;
+      border-bottom: 1px dashed #856404;
+    }
+
+    .empty-variable {
+      background: #f8d7da;
+      padding: 0 3px;
+      border-radius: 2px;
+      border-bottom: 1px dashed #721c24;
+      color: #721c24;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .article-title {
+      font-size: 12pt;
+      font-weight: bold;
+      margin-top: 1.8em;
+      margin-bottom: 0.6em;
+    }
+
+    .sub-article-title {
+      font-size: 11pt;
+      font-weight: bold;
+      margin-top: 1.2em;
+      margin-bottom: 0.4em;
+    }
+
+    .definitions-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1em 0;
+    }
+
+    .definitions-table td {
+      padding: 6px 10px;
+      vertical-align: top;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .definitions-table td:first-child {
+      font-weight: bold;
+      width: 180px;
+      white-space: nowrap;
+    }
+
+    .indent {
+      padding-left: 2em;
+    }
+
+    .indent p {
+      margin-bottom: 0.4em;
+    }
+
+    ol.roman {
+      list-style-type: lower-roman;
+      padding-left: 2em;
+      margin-bottom: 0.8em;
+    }
+
+    ol.roman li {
+      margin-bottom: 0.4em;
+      text-align: justify;
+    }
+
+    ul.dash {
+      list-style: none;
+      padding-left: 1.5em;
+    }
+
+    ul.dash li {
+      margin-bottom: 0.4em;
+      text-align: justify;
+    }
+
+    ul.dash li::before {
+      content: "–  ";
+      margin-left: -1.5em;
+    }
+
+    ul.bullet {
+      list-style: disc;
+      padding-left: 2em;
+    }
+
+    ul.bullet li {
+      margin-bottom: 0.3em;
+    }
+
+    .signature-block {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3em;
+      page-break-inside: avoid;
+    }
+
+    .signature-col {
+      width: 45%;
+      text-align: center;
+    }
+
+    .signature-col .label {
+      font-weight: bold;
+      margin-bottom: 0.5em;
+    }
+
+    .signature-col .line {
+      border-bottom: 1px solid #333;
+      height: 60px;
+      margin-bottom: 0.5em;
+    }
+
+    .signature-col .signature-img {
+      display: block;
+      max-height: 70px;
+      max-width: 100%;
+      margin: 0 auto 0.3em;
+    }
+
+    .signature-col .signature-name {
+      font-weight: bold;
+      margin-bottom: 0.2em;
+    }
+
+    .signature-col .signature-date {
+      font-size: 9pt;
+      color: #555;
+      margin-bottom: 0;
+    }
+
+    .annexe-header {
+      font-size: 14pt;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 1.5em;
+      text-transform: uppercase;
+    }
+
+    .annexe-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1em 0;
+    }
+
+    .annexe-table td {
+      padding: 8px 12px;
+      vertical-align: top;
+      border: 1px solid #ccc;
+    }
+
+    .annexe-table td:first-child {
+      font-weight: bold;
+      width: 200px;
+      background: #f8f8f8;
+    }
+
+    .page-number {
+      text-align: center;
+      font-size: 9pt;
+      color: #888;
+      margin-top: 2em;
+    }
+
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .page {
+        margin: 0;
+        padding: 0;
+      }
+      .variable {
+        background: none;
+        border: none;
+      }
+      .empty-variable {
+        background: none;
+        border: none;
+        color: inherit;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="content">
+
+  <div class="logo">
+    <img src="data:image/png;base64,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" alt="Atome" />
+  </div>
+
+  <h1>Contrat de Design Partnership</h1>
+
+  <div class="parties">
+    <p class="center" style="font-weight: bold; font-size: 12pt;">ENTRE LES SOUSSIGNÉS&nbsp;:</p>
+
+    <div class="party">
+      <p>
+        <strong>Atome Software</strong>, société par actions simplifiée au capital de 1.000 euros, dont le
+        siège social est situé 60 rue François 1er, 75008 à Paris, immatriculée au Registre
+        du Commerce et des Sociétés de Paris sous le numéro 989 735 048, représentée
+        par M. Jérémy Foucray en qualité de directeur général de Rising Lab, une société à
+        responsabilité limitée de droit belge, inscrite à la Banque-Carrefour des Entreprises
+        sous le numéro BE 0690.566.556, ayant son siège social situé 54 Avenue Louise,
+        1050 Bruxelles, Belgique, Présidente de Atome Software,
+      </p>
+      <p class="party-label">Ci-après, l'«&nbsp;Éditeur&nbsp;»,</p>
+      <p class="party-label">D'une part,</p>
+    </div>
+
+    <p class="center" style="font-weight: bold;">ET</p>
+
+    <div class="party">
+      <p>
+        <span class="variable">{{clientName}}</span>,
+        <span class="variable">{{legalForm}}</span>,
+        dont le siège social est situé <span class="variable">{{address}}</span>,
+        inscrite à la Banque-Carrefour des Entreprises sous le numéro
+        <span class="variable">{{bceNumber}}</span>,
+        représentée par <span class="variable">{{legalRepName}}</span>
+        en sa qualité de <span class="variable">{{legalRepTitle}}</span>,
+      </p>
+      <p class="party-label">Ci-après, le «&nbsp;Client&nbsp;»,</p>
+      <p class="party-label">D'autre part,</p>
+    </div>
+
+    <p>
+      L'Éditeur et le Client sont ci-après désignés individuellement une «&nbsp;Partie&nbsp;» et
+      collectivement les «&nbsp;Parties&nbsp;».
+    </p>
+  </div>
+
+  <h2>Rappel du contexte</h2>
+
+  <p>
+    L'Éditeur développe une solution logicielle en mode SaaS («&nbsp;Software-as-a-service&nbsp;»)
+    permettant de construire des applications sur-mesure afin de faciliter le pilotage et
+    l'organisation des professionnels au quotidien. Cette solution vise à offrir aux entreprises
+    un espace de travail collaboratif et centralisé&nbsp;: les utilisateurs peuvent créer et
+    personnaliser leurs propres tableaux de bord, organiser et suivre leurs activités et
+    exploiter les données présentes sur les différents outils qu'ils choisissent de connecter
+    à la solution.
+  </p>
+
+  <p>
+    Dans le cadre du développement et de l'amélioration de la solution, l'Éditeur met en
+    place un programme de «&nbsp;design partnership&nbsp;».
+  </p>
+
+  <p>
+    Ce programme permet au Client d'accéder à la solution pour la tester et proposer des
+    évolutions.
+  </p>
+
+  <p>
+    Le Client est un professionnel à la recherche d'outils permettant de faciliter son
+    organisation, le pilotage de ses missions et la gestion des demandes des clients au
+    quotidien.
+  </p>
+
+  <p>
+    Les Parties se sont rapprochées pour formaliser un partenariat concernant l'utilisation
+    de la solution et les retours d'expériences du Client.
+  </p>
+
+  <p class="center" style="font-weight: bold; font-size: 12pt; margin-bottom: 1.5em;">
+    IL A ÉTÉ CONVENU ET ARRÊTÉ CE QUI SUIT&nbsp;:
+  </p>
+
+  <div class="article-title">1. DÉFINITIONS</div>
+
+  <p>
+    Dans le présent contrat (ci-après, le «&nbsp;Contrat&nbsp;»), les termes commençant par une
+    majuscule ont la signification qui leur est donnée ci-dessous, qu'ils soient utilisés au
+    singulier ou au pluriel.
+  </p>
+
+  <div class="article-title">2. OBJET DU CONTRAT</div>
+
+  <p>
+    Le Contrat définit les modalités d'accès et d'utilisation de la Solution et les conditions
+    dans lesquelles le Client peut faire des retours d'expérience à l'Éditeur afin que
+    celui-ci fasse évoluer la Solution s'il les juge pertinents.
+  </p>
+
+  <table class="definitions-table">
+    <tr>
+      <td>Administrateur</td>
+      <td>Désigne tout Utilisateur désigné par le Client, disposant des droits nécessaires pour gérer les accès et les permissions des autres Utilisateurs au sein de la Solution.</td>
+    </tr>
+    <tr>
+      <td>Données du Client</td>
+      <td>Désignent toutes les données, informations et contenus, y compris les Données Personnelles, que le Client ou ses Utilisateurs importent ou génèrent dans la Solution.</td>
+    </tr>
+    <tr>
+      <td>Données Personnelles</td>
+      <td>Désignent toute information identifiant directement ou indirectement une personne physique au sens du Règlement Général sur la Protection des données (RGPD), par exemple&nbsp;: un nom, prénom, numéro de téléphone, date de naissance, adresse.</td>
+    </tr>
+    <tr>
+      <td>Informations Confidentielles</td>
+      <td>Désignent toute information, résultat, document, ou donnée communiquée à l'une des Parties dans le cadre du Contrat ou en vue de sa conclusion, quel que soit le support utilisé (papier, base de données, etc.) ou la forme de cette transmission (écrite, orale ou visuelle).</td>
+    </tr>
+    <tr>
+      <td>Redevance</td>
+      <td>Désigne les sommes dues au titre du Contrat pour l'utilisation de la Solution par le Client et les Utilisateurs. Les modalités de la Redevance et du support éventuellement inclus sont prévues à l'Annexe 1.</td>
+    </tr>
+    <tr>
+      <td>Solution</td>
+      <td>Désigne la solution SaaS («&nbsp;Software-as-a-Service&nbsp;») commercialisée par Atome Software, sous la dénomination commerciale "Atome" dans sa version actuelle mais également dans toutes les versions futures.</td>
+    </tr>
+    <tr>
+      <td>Utilisateur</td>
+      <td>Désigne les employés du Client, ou toute autre personne autorisée par le Client à accéder et à utiliser la Solution dans le cadre de ses fonctions professionnelles.</td>
+    </tr>
+  </table>
+
+  <div class="article-title">3. PRÉREQUIS</div>
+
+  <p>
+    Le Client et l'Utilisateur doivent disposer d'un terminal (téléphone portable, tablette,
+    ou ordinateur) connecté à internet et ayant les caractéristiques techniques minimales
+    requises pour utiliser la Solution. Le Client et les Utilisateurs doivent faire les mises à
+    jour nécessaires de leur équipement pour pouvoir utiliser la Solution.
+  </p>
+
+  <div class="article-title">4. RÔLES DES PARTIES</div>
+
+  <div class="sub-article-title">4.1. Rôle des Parties dans la mise à disposition de la Solution</div>
+
+  <h3>4.1.1. Accès à la Solution</h3>
+
+  <p>
+    L'Administrateur est en charge de créer, supprimer et tenir à jour la liste des accès
+    Utilisateurs. Depuis la Solution, il peut autoriser des Utilisateurs à bénéficier de la
+    Solution, dans la limite du nombre de licences visé à l'Annexe 1.
+  </p>
+
+  <p>
+    Le Client doit notifier l'Éditeur par tout moyen écrit lorsque le nombre d'Utilisateurs
+    dépasse la limite autorisée par le Contrat, afin de réajuster le montant de la Redevance.
+    En tout état de cause, l'Éditeur disposera de la possibilité d'auditer l'utilisation de la
+    Solution faite par le Client, au maximum une fois par an, afin de vérifier le respect du
+    Contrat.
+  </p>
+
+  <h3>4.1.2. Implémentation</h3>
+
+  <p>
+    L'implémentation correspond à la prise en main de la Solution par le Client. Elle comprend
+    les éléments détaillés à l'Annexe 1 tels que sa configuration, la connexion aux outils du
+    Client, et la démonstration des fonctionnalités de base, comme la personnalisation des
+    tableaux de bord.
+  </p>
+
+  <p>
+    Dans le cadre de l'implémentation, l'Éditeur s'engage à configurer le workspace pour le
+    Client en fonction de ses propres besoins afin de construire un outil qui lui corresponde.
+  </p>
+
+  <p>
+    Dans cette optique, l'Éditeur fera en sorte de personnaliser le workspace de façon à
+    répondre aux besoins exprimés par le Client dans le cadre d'une obligation de moyens,
+    dans la limite des fonctionnalités existantes lors de l'implémentation et de celles
+    développées tout au long du Contrat grâce aux retours du Client, tels que prévus à
+    l'article 4.2 ci-dessous.
+  </p>
+
+  <p>Le coût et les détails de cette phase sont prévus à l'Annexe 1.</p>
+
+  <h3>4.1.3. Description de la Solution et du support</h3>
+
+  <p>
+    Les fonctionnalités de la Solution sont décrites dans la Solution et pourront évoluer selon
+    les décisions de l'Éditeur.
+  </p>
+
+  <p>
+    La Solution inclut un agent conversationnel basé sur l'intelligence artificielle offrant des
+    conseils d'utilisation de la Solution et de personnalisation du contenu en fonction du
+    Client ou de l'Utilisateur.
+  </p>
+
+  <p>
+    L'Éditeur fournit un support au Client et/ou à ses Utilisateurs dans le cadre de
+    l'utilisation de la Solution dans les conditions prévues à l'Annexe 1.
+  </p>
+
+  <div class="sub-article-title">4.2. Obligations du Client concernant l'utilisation de la Solution</div>
+
+  <p>
+    Le Client fera des retours d'expérience à l'Éditeur par tout moyen écrit lors de son
+    utilisation de la Solution.
+  </p>
+
+  <p>
+    Le Client s'engage également à se rendre disponible au minimum une fois par mois lors
+    de réunions mensuelles pour faire ses retours.
+  </p>
+
+  <p>
+    L'Éditeur sera le seul à décider s'il prend en compte ou non les retours du Client pour
+    faire évoluer la Solution. Toutefois, en cas de problème bloquant rencontré par le Client
+    dans son utilisation de la Solution, l'Éditeur s'engage à étudier avec le Client les
+    solutions possibles et à prioriser les développements nécessaires dans la mesure du
+    raisonnable, en tenant compte du niveau de complexité et de l'intérêt général de
+    l'évolution pour l'ensemble des utilisateurs de la Solution.
+  </p>
+
+  <div class="article-title">5. LICENCE D'UTILISATION</div>
+
+  <div class="sub-article-title">5.1. Modalités de la licence</div>
+
+  <p>
+    En contrepartie du paiement de la Redevance, l'Éditeur concède au Client une licence
+    d'utilisation de la Solution non-exclusive et non sous-licenciable. Cette licence est
+    personnelle à chaque Utilisateur.
+  </p>
+
+  <p>
+    Cette licence d'utilisation est concédée pour le monde entier et est valable tant que le
+    Contrat est en vigueur.
+  </p>
+
+  <div class="sub-article-title">5.2. Limites de la licence</div>
+
+  <p>Le Client s'interdit et s'assure que les Utilisateurs ne tentent pas de&nbsp;:</p>
+
+  <ol class="roman">
+    <li>Utiliser la Solution à des fins illégales ou illicites&nbsp;;</li>
+    <li>Utiliser la Solution à des fins autres que celles prévues au Contrat&nbsp;;</li>
+    <li>Créer des œuvres dérivées à partir de la Solution&nbsp;;</li>
+    <li>Distribuer, mettre à disposition de tiers, revendre ou louer la Solution ou les identifiants permettant d'accéder à la Solution&nbsp;;</li>
+    <li>Compromettre l'intégrité ou les performances de la Solution&nbsp;;</li>
+    <li>Participer à des activités telles que l'ingénierie inverse sur la Solution&nbsp;;</li>
+    <li>Tenter de créer un produit ou service concurrent en reproduisant les caractéristiques, fonctionnalités ou attributs graphiques de la Solution.</li>
+  </ol>
+
+  <div class="article-title">6. CONDITIONS FINANCIÈRES</div>
+
+  <div class="sub-article-title">6.1. Prix</div>
+
+  <p>
+    En contrepartie du droit d'utilisation concédé à l'Article 5 ci-dessus, le Client doit
+    s'acquitter de la Redevance prévue à l'Annexe 1.
+  </p>
+
+  <div class="sub-article-title">6.2. Périodicité et modalités de paiement</div>
+
+  <p>
+    La Redevance est payable selon une périodicité
+    <span class="variable">{{periodicite}}</span>. Le paiement est effectué par
+    <span class="variable">{{modePaiement}}</span> dans un délai de trente (30) jours
+    à compter de la date d'émission de la facture, sur le compte bancaire suivant&nbsp;:
+  </p>
+
+  <ul class="dash">
+    <li>Titulaire du compte&nbsp;: Atome Software</li>
+    <li>IBAN&nbsp;: FR76 1695 8000 0152 4503 1228 373</li>
+    <li>BIC&nbsp;: QNTOFRP1XXX</li>
+  </ul>
+
+  <p>
+    Tout retard de paiement entraînera de plein droit l'application de pénalités de retard
+    calculées conformément à l'article L. 441-10 du Code de commerce, ainsi qu'une
+    indemnité forfaitaire pour frais de recouvrement de quarante (40) euros.
+  </p>
+
+  <div class="article-title">7. PROPRIÉTÉ INTELLECTUELLE</div>
+
+  <div class="sub-article-title">7.1. Propriété Éditeur</div>
+
+  <p>
+    L'Éditeur conserve l'intégralité des droits de propriété intellectuelle relatifs à la Solution.
+  </p>
+
+  <p>
+    Toute amélioration, mise à jour ou nouvelle version de la Solution, qu'elle soit ou non
+    basée sur des suggestions du Client, sera la propriété exclusive de l'Éditeur.
+  </p>
+
+  <div class="sub-article-title">7.2. Propriété Client</div>
+
+  <p>Les Données du Client sont la propriété du Client.</p>
+
+  <p>
+    Les Données du Client ne sont pas utilisées par l'Éditeur, sauf pour fournir la Solution
+    et à des fins statistiques pour les besoins d'amélioration de la Solution, auquel cas les
+    Données du Client sont anonymisées et ne font apparaître aucune Donnée Personnelle
+    ou Donnée du Client.
+  </p>
+
+  <div class="article-title">8. SÉCURITÉ ET CONFIDENTIALITÉ DES DONNÉES</div>
+
+  <div class="sub-article-title">8.1. Confidentialité</div>
+
+  <p>Toute Partie est tenue concernant les Informations Confidentielles&nbsp;:</p>
+
+  <ol class="roman">
+    <li>de les garder et de les traiter avec le degré de protection adéquat&nbsp;;</li>
+    <li>de ne pas les divulguer à un tiers&nbsp;;</li>
+    <li>de ne pas permettre ni faciliter, sauf autorisation préalable et écrite de la Partie propriétaire, la publication ou la diffusion de telles Informations Confidentielles, et de ne pas les utiliser à d'autres fins que celles prévues au Contrat&nbsp;;</li>
+    <li>de s'assurer que les Utilisateurs amenés à connaître des Informations Confidentielles maintiennent leur caractère confidentiel, et préviennent toute divulgation&nbsp;;</li>
+    <li>de restituer à l'autre Partie, sur demande de cette dernière, de toute Information Confidentielle reçue sous une forme tangible et de n'en garder aucune copie ou reproduction.</li>
+  </ol>
+
+  <p>
+    Une Partie ne sera pas considérée comme ayant violé la précédente obligation si ladite
+    information&nbsp;:
+  </p>
+
+  <ol class="roman">
+    <li>est dans le domaine public au moment de sa communication, ou vient à la connaissance du public sans faute de sa part, ou</li>
+    <li>est volontairement divulguée par la Partie concernée, avant l'expiration du Contrat.</li>
+  </ol>
+
+  <div class="sub-article-title">8.2. Sécurité des Données du Client</div>
+
+  <p>
+    L'Éditeur s'engage à mettre en œuvre les mesures techniques et organisationnelles
+    appropriées pour garantir un niveau de sécurité adapté au risque et pour préserver la
+    sécurité, l'intégrité et la confidentialité des Données du Client contre toute destruction,
+    perte, altération, divulgation ou accès non autorisé.
+  </p>
+
+  <p>
+    Les Données du Client sont hébergées au sein de l'Union européenne et sont chiffrées
+    en transit et au repos.
+  </p>
+
+  <div class="article-title">9. RESPONSABILITÉ</div>
+
+  <div class="sub-article-title">9.1. Exclusion de responsabilité</div>
+
+  <p>L'Éditeur n'est pas responsable&nbsp;:</p>
+
+  <ul class="dash">
+    <li>des dommages ou défaillances résultant de l'équipement du Client, de l'Utilisateur ou d'un tiers&nbsp;;</li>
+    <li>des réponses fournies par l'agent conversationnel basé sur l'intelligence artificielle (que ce soit sur la véracité des informations ou sur les violations de droit de propriété intellectuelle des tiers), ni de l'utilisation qu'en font les Utilisateurs&nbsp;;</li>
+    <li>des dommages indirects, y compris la perte de profits, la perte de chance, le préjudice commercial, la perte de clientèle.</li>
+  </ul>
+
+  <div class="sub-article-title">9.2. Plafond de responsabilité</div>
+
+  <p>
+    Le montant total et cumulé de la responsabilité de l'Éditeur au titre du Contrat ne pourra
+    excéder 120% du montant total des Redevances hors taxes payées par le Client au cours
+    des douze (12) mois précédant la survenance du fait générateur de responsabilité.
+  </p>
+
+  <p>
+    Par exception, en cas de (i) perte de données irréversible, définie comme toute perte de
+    Données du Client ne pouvant être restaurée à partir des sauvegardes ou d'autres
+    techniques de récupération mises en œuvre par l'Éditeur, ou (ii) d'indisponibilité prolongée
+    de la Solution, définie comme une interruption continue du service excédant vingt-quatre
+    (24) heures, le plafond de responsabilité de l'Éditeur est porté à 150% du montant total
+    des Redevances hors taxes payées par le Client au cours des douze (12) mois précédant
+    la survenance du fait générateur.
+  </p>
+
+  <div class="article-title">10. DURÉE</div>
+
+  <p>
+    Le Contrat est conclu pour une durée initiale d'un (1) an à compter de sa signature. À
+    la fin de cette période, le Contrat sera automatiquement renouvelé pour des périodes
+    d'un an, sauf si l'une des Parties le résilie par lettre recommandée avec accusé de
+    réception au moins 1 mois avant la date anniversaire.
+  </p>
+
+  <p>
+    Par dérogation à ce qui précède, et afin de permettre au Client de s'assurer de
+    l'adéquation de la Solution avec ses besoins, le Client dispose de deux (2) fenêtres
+    de sortie anticipée sans pénalité au cours de la première année du Contrat&nbsp;:
+  </p>
+
+  <ul class="dash">
+    <li>
+      à l'issue des trois (3) premiers mois du Contrat, sous réserve d'avoir notifié
+      l'Éditeur par lettre recommandée avec accusé de réception ou par courrier
+      électronique avec accusé de réception au moins quinze (15) jours avant la fin du
+      troisième (3<sup>ème</sup>) mois&nbsp;;
+    </li>
+    <li>
+      à l'issue des six (6) premiers mois du Contrat, sous réserve d'avoir notifié
+      l'Éditeur par lettre recommandée avec accusé de réception ou par courrier
+      électronique avec accusé de réception au moins quinze (15) jours avant la fin du
+      sixième (6<sup>ème</sup>) mois.
+    </li>
+  </ul>
+
+  <p>
+    En cas d'exercice de l'une de ces facultés de sortie, les Redevances déjà versées
+    restent acquises à l'Éditeur au prorata des trimestres entamés, et aucune indemnité
+    n'est due par le Client au titre du solde de la durée initiale.
+  </p>
+
+  <div class="article-title">11. RÉSILIATION</div>
+
+  <p>
+    En cas de manquement, la Partie lésée doit adresser à la Partie défaillante une lettre
+    recommandée avec avis de réception exposant les manquements et lui laissant un délai
+    raisonnable pour y remédier.
+  </p>
+
+  <p>
+    Si, à l'issue de ce délai, les manquements persistent, la Partie lésée pourra résilier le
+    Contrat de plein droit par une nouvelle lettre recommandée, sans autre formalité.
+  </p>
+
+  <div class="article-title">12. CONSÉQUENCES DE LA FIN DU CONTRAT</div>
+
+  <p>
+    À la fin du Contrat, le Client et les Utilisateurs ne peuvent plus accéder à la Solution.
+    Le Client peut solliciter l'Éditeur pour obtenir la récupération de ses données au format
+    .csv dans un délai maximum de trente (30) jours à compter de la fin du Contrat.
+  </p>
+
+  <p>
+    Passé ce délai, l'Éditeur supprime définitivement les Données du Client, sauf obligation
+    légale ou réglementaire de conservation.
+  </p>
+
+  <div class="article-title">13. SIGNATURE ÉLECTRONIQUE</div>
+
+  <p>
+    Si le Contrat est signé par les Parties via un procédé de signature électronique mis en
+    œuvre par un tiers qui garantit la sécurité et l'intégrité des exemplaires numériques,
+    conformément aux articles 1366 et suivants du Code civil, les Parties conviennent que
+    le Contrat signé électroniquement&nbsp;:
+  </p>
+
+  <ul class="dash">
+    <li>constitue un original de sorte que la condition de fournir plusieurs originaux en vertu de l'article 1375 du Code civil est satisfaite&nbsp;;</li>
+    <li>a la même valeur probante qu'un écrit signé de façon manuscrite et que le Contrat peut être opposé aux Parties et produit en justice à titre de preuve littérale.</li>
+  </ul>
+
+  <div class="article-title">14. LOI APPLICABLE ET JURIDICTION</div>
+
+  <p>
+    Le Contrat est soumis au droit français. Tout litige relatif à son interprétation ou à son
+    exécution sera de la compétence exclusive du Tribunal des Activités Économiques de
+    Paris.
+  </p>
+
+  <div class="signature-block">
+    <div class="signature-col">
+      <div class="label">Pour l'Éditeur</div>
+      {{#if editorSignatureImage}}
+        <img src="{{{editorSignatureImage}}}" alt="Signature" class="signature-img" />
+        <p class="signature-name">{{editorName}}</p>
+        <p class="signature-date">Fait le {{editorDate}}</p>
+      {{else}}
+        <div class="line"></div>
+        <p>Nom / Prénom</p>
+      {{/if}}
+    </div>
+    <div class="signature-col">
+      <div class="label">Pour le Client</div>
+      {{#if clientSignatureImage}}
+        <img src="{{{clientSignatureImage}}}" alt="Signature" class="signature-img" />
+        <p class="signature-name">{{clientSignerName}}</p>
+        {{#if clientSignerTitle}}<p class="signature-name">{{clientSignerTitle}}</p>{{/if}}
+        <p class="signature-date">Fait le {{clientSignedDate}}</p>
+      {{else}}
+        <div class="line"></div>
+        <p>Nom / Prénom</p>
+      {{/if}}
+    </div>
+  </div>
+
+  <div class="annexe-header" style="page-break-before: always;">Annexe 1 – Conditions particulières</div>
+
+  <p>
+    La présente Annexe fait partie intégrante du Contrat conclu entre l'Éditeur et le Client.
+  </p>
+
+  <div class="sub-article-title">1. Tarifs de la licence</div>
+
+  <p>
+    La Redevance annuelle est calculée sur la base du nombre de licences Utilisateurs
+    souscrites, au tarif unitaire indiqué ci-dessous&nbsp;:
+  </p>
+
+  <table class="annexe-table">
+    <tr>
+      <td>Prix annuel par licence&nbsp;:</td>
+      <td><span class="variable">{{prixLicenceAnnuel}}</span> euros, hors taxes</td>
+    </tr>
+    <tr>
+      <td>Nombre de licences de base&nbsp;:</td>
+      <td><span class="variable">{{nbLicences}}</span> licences Utilisateurs</td>
+    </tr>
+    <tr>
+      <td style="font-weight: bold;">Redevance annuelle de base&nbsp;:</td>
+      <td style="font-weight: bold;"><span class="variable">{{nbLicences}}</span> × <span class="variable">{{prixLicenceAnnuel}}</span> = <span class="variable">{{redevanceAnnuelle}}</span> euros, hors taxes</td>
+    </tr>
+  </table>
+
+  <p>
+    <strong>Licences additionnelles ad hoc&nbsp;:</strong> en complément des licences de
+    base ci-dessus, le Client peut activer des licences additionnelles à tout moment, au
+    trimestre, pour couvrir notamment l'arrivée de stagiaires ou de collaborateurs
+    temporaires. Ces licences additionnelles sont facturées au même tarif unitaire,
+    calculé au prorata du nombre de trimestres d'utilisation, et viennent s'ajouter à la
+    facturation trimestrielle suivante. La demande d'activation est formulée par le Client
+    par tout moyen écrit (email suffisant) auprès de l'Éditeur.
+  </p>
+
+  <div class="sub-article-title">2. Modalités de paiement</div>
+
+  <table class="annexe-table">
+    <tr>
+      <td>Périodicité&nbsp;:</td>
+      <td><span class="variable">{{periodicite}}</span></td>
+    </tr>
+    <tr>
+      <td>Mode de paiement&nbsp;:</td>
+      <td><span class="variable">{{modePaiement}}</span></td>
+    </tr>
+  </table>
+
+  <div class="sub-article-title">3. Support</div>
+
+  <p>
+    Le support est inclus dans la Redevance à hauteur de
+    <span class="variable">{{heuresSupport}}</span> heures par mois.
+    Le support est ouvert du lundi au vendredi de 9h à 17h et est joignable aux coordonnées
+    suivantes&nbsp;: jeremy@atome.sh / +32 473 422 778.
+  </p>
+
+  <p>
+    Les heures de support supplémentaires au-delà des heures incluses sont facturées au prix
+    de <span class="variable">{{tarifSupportSupp}}</span> euros hors taxes par heure,
+    étant précisé que chaque heure entamée est comptée comme une heure due.
+  </p>
+
+  <div class="sub-article-title">4. Paramétrage initial (implémentation)</div>
+
+  <p>L'implémentation couvre le périmètre suivant&nbsp;:</p>
+
+  <ul class="bullet">
+    <li>Configuration de la Solution</li>
+    <li>Connexion aux outils et environnements du Client</li>
+    <li>Paramétrages initiaux</li>
+    <li>Présentation et explication des fonctionnalités essentielles</li>
+  </ul>
+
+  <p>
+    Le paramétrage initial comprend
+    <span class="variable">{{heuresParametrage}}</span> heures de configuration et de
+    mise en place. Le paramétrage initial est offert.
+  </p>
+
+</div>
+</body>
+</html>

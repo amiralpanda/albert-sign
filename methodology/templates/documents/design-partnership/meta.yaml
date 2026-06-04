@@ -1,0 +1,97 @@
+name: Contrat de Design Partnership
+description: Contrat standard pour un partenariat design Atome avec un client
+type: contract
+documentType: design_partnership
+requiresSignature: true
+
+sections:
+  - id: client
+    label: Identification du Client
+    variables:
+      - id: clientName
+        label: Nom du Client
+        type: text
+        required: true
+        source: client.name
+      - id: legalForm
+        label: Forme juridique
+        type: text
+        required: true
+        placeholder: "SAS, SARL, SA..."
+        source: client.legalForm
+      - id: address
+        label: Adresse du siège social
+        type: text
+        required: true
+        source: client.registeredAddress
+      - id: rcsCity
+        label: Ville du RCS
+        type: text
+        required: true
+        source: client.rcsCity
+      - id: rcsNumber
+        label: Numéro RCS
+        type: text
+        required: true
+        placeholder: "123 456 789"
+        source: client.rcsNumber
+      - id: legalRepName
+        label: Nom du représentant légal
+        type: text
+        required: true
+        source: client.legalRepName
+      - id: legalRepTitle
+        label: Qualité du représentant légal
+        type: text
+        required: true
+        placeholder: "Gérant, Président, Directeur général..."
+        source: client.legalRepTitle
+
+  - id: licence
+    label: Licences & Redevance
+    variables:
+      - id: nbLicences
+        label: Nombre de licences Utilisateurs
+        type: text
+        required: true
+      - id: prixLicenceAnnuel
+        label: Prix annuel par licence (euros HT)
+        type: text
+        required: true
+        placeholder: "1.200"
+      - id: redevanceAnnuelle
+        label: "Redevance annuelle totale (euros HT)"
+        type: computed
+        required: true
+        formula: "nbLicences * prixLicenceAnnuel"
+
+  - id: payment
+    label: Modalités de paiement
+    variables:
+      - id: periodicite
+        label: Périodicité de paiement
+        type: text
+        required: true
+        placeholder: "mensuel, trimestriel ou annuel"
+      - id: modePaiement
+        label: Mode de paiement
+        type: text
+        required: true
+        placeholder: "virement bancaire ou prélèvement"
+
+  - id: support
+    label: Support & Paramétrage
+    variables:
+      - id: heuresParametrage
+        label: Heures de paramétrage initial
+        type: text
+        required: true
+        placeholder: "10"
+      - id: heuresSupport
+        label: Heures de support par mois
+        type: text
+        required: true
+      - id: tarifSupportSupp
+        label: Tarif support supplémentaire (euros HT/heure)
+        type: text
+        required: true

@@ -1,0 +1,97 @@
+name: Design Partnership Agreement
+description: Standard agreement for an Atome design partnership with a client
+type: contract
+documentType: design_partnership
+requiresSignature: true
+
+sections:
+  - id: client
+    label: Client Identification
+    variables:
+      - id: clientName
+        label: Client Name
+        type: text
+        required: true
+        source: client.name
+      - id: legalForm
+        label: Legal Form
+        type: text
+        required: true
+        placeholder: "SAS, SARL, SA, Ltd, GmbH..."
+        source: client.legalForm
+      - id: address
+        label: Registered Office Address
+        type: text
+        required: true
+        source: client.registeredAddress
+      - id: rcsCity
+        label: Trade Register City
+        type: text
+        required: true
+        source: client.rcsCity
+      - id: rcsNumber
+        label: Registration Number
+        type: text
+        required: true
+        placeholder: "123 456 789"
+        source: client.rcsNumber
+      - id: legalRepName
+        label: Legal Representative Name
+        type: text
+        required: true
+        source: client.legalRepName
+      - id: legalRepTitle
+        label: Legal Representative Title
+        type: text
+        required: true
+        placeholder: "Manager, Chairman, Chief Executive Officer..."
+        source: client.legalRepTitle
+
+  - id: licence
+    label: Licences & Fees
+    variables:
+      - id: nbLicences
+        label: Number of User Licences
+        type: text
+        required: true
+      - id: prixLicenceAnnuel
+        label: Annual Fee per Licence (euros, excl. VAT)
+        type: text
+        required: true
+        placeholder: "1,200"
+      - id: redevanceAnnuelle
+        label: "Total Annual Fee (euros, excl. VAT)"
+        type: computed
+        required: true
+        formula: "nbLicences * prixLicenceAnnuel"
+
+  - id: payment
+    label: Payment Terms
+    variables:
+      - id: periodicite
+        label: Payment Frequency
+        type: text
+        required: true
+        placeholder: "monthly, quarterly or annually"
+      - id: modePaiement
+        label: Payment Method
+        type: text
+        required: true
+        placeholder: "bank transfer or direct debit"
+
+  - id: support
+    label: Support & Setup
+    variables:
+      - id: heuresParametrage
+        label: Initial Setup Hours
+        type: text
+        required: true
+        placeholder: "10"
+      - id: heuresSupport
+        label: Support Hours per Month
+        type: text
+        required: true
+      - id: tarifSupportSupp
+        label: Additional Support Rate (euros excl. VAT/hour)
+        type: text
+        required: true

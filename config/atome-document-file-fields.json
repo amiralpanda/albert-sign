@@ -1,0 +1,28 @@
+{
+  "_comment": "Run: node scripts/atome/bootstrap-document-file-fields.mjs to populate field and option UUIDs",
+  "filesSchemaId": null,
+  "fields": {
+    "document_type": null,
+    "signature_status": null,
+    "albert_document_id": null,
+    "albert_template_name": null,
+    "signer_email": null,
+    "signed_at": null
+  },
+  "documentTypeOptions": {
+    "design_partnership": null,
+    "commercial_proposal": null,
+    "nda": null,
+    "amendment": null,
+    "annex": null,
+    "other": null
+  },
+  "signatureStatusOptions": {
+    "not_required": null,
+    "draft": null,
+    "pending_signature": null,
+    "signed": null,
+    "expired": null,
+    "cancelled": null
+  }
+}

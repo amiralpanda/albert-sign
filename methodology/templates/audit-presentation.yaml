@@ -1,0 +1,160 @@
+# Template de présentation Audit — Méthode Albert
+# Structure standard en 3 actes : Diagnostic → Vision → Chemin
+# Détail complet dans .cursor/skills/client-presentations/SKILL.md
+
+name: audit
+title: "Audit Report — {{clientName}}"
+description: "Restitution d'audit et stratégie pour {{clientName}}"
+language: "adapt to client (FR or EN)"
+
+# Acte 1 — Diagnostic (crédibilité)
+# Le client pense : "Ils ont compris notre réalité"
+
+slides:
+  - id: title
+    type: TitleTemplate
+    title: "Audit Report"
+    subtitle: "{{clientName}}"
+    eyebrow: "Confidential — {{date}}"
+
+  - id: context
+    type: ContextTemplate
+    title: "Context"
+    content: |
+      Business situation of the client (sector, size, merger, growth...).
+      Metrics must be BUSINESS metrics (products, zones, headcount).
+      NEVER audit metrics (sessions, insights analyzed).
+    metrics:
+      - business_metric_1 (e.g. "4 product pillars")
+      - business_metric_2 (e.g. "4+ geographic zones")
+      - business_metric_3 (e.g. "2 legacy CRM stacks")
+
+  - id: people
+    type: custom (SlideHeader + PersonCard or list)
+    title: "People involved in the audit"
+    content: |
+      Names, roles, scope covered.
+      If people were on the same call, don't emphasize "individual interviews".
+
+  - id: executive_summary
+    type: custom (SlideHeader + CardGrid with AlertTriangle)
+    eyebrow: "Executive summary"
+    title: "{{N}} structural issues"
+    content: |
+      Maximum 4 issues, coded by severity (critical / high).
+      The client should be able to stop here and understand the diagnosis.
+
+  - id: pain_by_function
+    type: custom (grid 3x2)
+    eyebrow: "Diagnostic"
+    title: "Pain points by function"
+    content: |
+      Grid by role/department (not by individual unless 1:1 confirmed).
+      Each card: tool used + friction + severity score.
+
+  - id: tool_landscape
+    type: custom (table)
+    eyebrow: "Tool landscape"
+    title: "{{N}} tools, {{M}} CRMs, {{K}} spreadsheets"
+    content: |
+      Table: tool / used by / verdict (replace / keep / connect / eliminate).
+      Color-coded verdict badges.
+
+  - id: cross_cutting
+    type: custom (CardGrid with icons + scores)
+    eyebrow: "Cross-cutting view"
+    title: "{{N}} systemic tensions"
+    content: |
+      3-4 systemic issues with team tags and severity scores.
+      Pattern summary at bottom ("X → Y → Z").
+
+  - id: verbatims
+    type: KeyQuotesTemplate
+    eyebrow: "From the audit"
+    title: "What we heard"
+    variant: gradient
+    content: |
+      3 quotes max. Anonymized by role if grouped calls.
+      Pick the most impactful ones.
+
+# Acte 2 — Vision (projection)
+# Le client pense : "Je vois ce que ça changerait"
+
+  - id: transition
+    type: custom (centered full-screen)
+    title: "What we propose to build"
+    content: "Section divider between diagnostic and proposal."
+
+  - id: before_after
+    type: BeforeAfterTemplate
+    eyebrow: "Vision"
+    title: "Where you are — where we take you"
+    content: |
+      Concrete cases from the audit, not generic.
+      Before = lived situation. After = what changes with Atome.
+      Summary bar at bottom.
+
+  - id: what_we_build
+    type: custom (CardGrid with icons + durations)
+    eyebrow: "What we build"
+    title: "{{N}} workstreams, one foundation"
+    content: |
+      3-4 workstreams from the strategy (strategy/strategies.json).
+      Each: icon + title + short description + estimated duration.
+
+  - id: prioritization
+    type: custom (2x2 matrix with axes)
+    eyebrow: "Prioritization"
+    title: "Effort / impact matrix"
+    content: |
+      4 quadrants: Quick wins, Strategic foundation, Next phase, Trap to avoid.
+      Items as colored pills in each quadrant.
+
+# Acte 3 — Chemin (engagement)
+# Le client pense : "Je sais comment on y arrive"
+
+  - id: integrations
+    type: custom
+    eyebrow: "Product transparency"
+    title: "What's deliverable vs what's coming"
+    content: |
+      Honest split: available now vs product roadmap.
+      No vague promises.
+
+  - id: roadmap
+    type: RoadmapTemplate
+    eyebrow: "Deployment"
+    title: "{{year}} trajectory"
+    content: |
+      3-4 phases with durations and deliverables.
+      Each phase delivers value before moving to the next.
+
+  - id: next_steps
+    type: custom (numbered list)
+    eyebrow: "What comes next"
+    title: "{{N}} concrete steps"
+    content: |
+      4-5 numbered actions with timing.
+
+  - id: thanks
+    type: custom (centered)
+    title: "Thank you"
+    content: "Contact info + Atome logo."
+
+# Optional slides (add if relevant)
+optional:
+  - id: data_model
+    when: "Data modeling is a key challenge (e.g. multi-level hierarchy)"
+    type: custom (tiered visualization)
+
+  - id: team_views
+    when: "Multi-team with very different views needed"
+    type: custom (2x2 team cards)
+
+  - id: quick_wins_detail
+    when: "Want to detail gains per action with time estimates"
+    type: QuickWinsTemplate
+
+  - id: roi
+    when: "Time-lost data is solid and quantified"
+    type: ROITemplate

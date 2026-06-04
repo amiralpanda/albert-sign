@@ -1,0 +1,9 @@
+node_modules/
+web/dist/
+.env
+.env.local
+.env.vercel.*
+clients/**/signing/
+*.log
+.DS_Store
+.vercel

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "pnpm install --no-frozen-lockfile",
+  "buildCommand": "pnpm run build",
+  "outputDirectory": "web/dist",
+  "framework": null,
+  "functions": {
+    "api/[...path].ts": {
+      "maxDuration": 60,
+      "memory": 2048,
+      "includeFiles": "clients/**,methodology/templates/**,config/**,server/**"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/sign.html"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production",
+    "SIGNING_PUBLIC_BASE_URL": "https://sign.atome.software"
+  }
+}

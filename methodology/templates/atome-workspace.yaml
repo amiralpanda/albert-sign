@@ -1,0 +1,226 @@
+# Template de workspace Atome
+# Ce template définit la structure de base d'un workspace Atome pour une PME
+
+name: atome-workspace
+description: "Template de workspace Atome standard pour PME"
+
+workspace:
+  name: "{{clientName}} - Workspace"
+  modules:
+    - emails
+    - tasks
+    - contacts
+    - companies
+    - meetings
+    - calendar
+
+tables:
+  - name: Clients
+    description: "Base clients de l'entreprise"
+    icon: "building"
+    fields:
+      - name: Nom
+        type: text
+        required: true
+      - name: Secteur
+        type: select
+        options:
+          - Tech / SaaS
+          - Services B2B
+          - Commerce
+          - Industrie
+          - Autre
+      - name: Statut
+        type: select
+        options:
+          - Prospect
+          - Client actif
+          - Client inactif
+      - name: CA annuel
+        type: number
+      - name: Contact principal
+        type: relation
+        relationTable: Contacts
+      - name: Date de création
+        type: date
+      - name: Notes
+        type: text
+
+  - name: Contacts
+    description: "Contacts des clients"
+    icon: "user"
+    fields:
+      - name: Nom
+        type: text
+        required: true
+      - name: Email
+        type: email
+      - name: Téléphone
+        type: phone
+      - name: Entreprise
+        type: relation
+        relationTable: Clients
+      - name: Rôle
+        type: text
+      - name: Décideur
+        type: checkbox
+
+  - name: Projets
+    description: "Projets en cours"
+    icon: "folder"
+    fields:
+      - name: Nom
+        type: text
+        required: true
+      - name: Client
+        type: relation
+        relationTable: Clients
+      - name: Statut
+        type: select
+        options:
+          - À faire
+          - En cours
+          - En attente
+          - Terminé
+      - name: Priorité
+        type: select
+        options:
+          - Basse
+          - Normale
+          - Haute
+          - Urgente
+      - name: Date de début
+        type: date
+      - name: Date de fin
+        type: date
+      - name: Responsable
+        type: text
+      - name: Budget
+        type: number
+
+  - name: Tâches
+    description: "Tâches à réaliser"
+    icon: "check-square"
+    fields:
+      - name: Titre
+        type: text
+        required: true
+      - name: Projet
+        type: relation
+        relationTable: Projets
+      - name: Assigné à
+        type: text
+      - name: Statut
+        type: select
+        options:
+          - À faire
+          - En cours
+          - Terminé
+      - name: Échéance
+        type: date
+      - name: Priorité
+        type: select
+        options:
+          - Basse
+          - Normale
+          - Haute
+
+views:
+  - name: Pipeline commercial
+    table: Clients
+    type: kanban
+    groupBy: Statut
+    
+  - name: Projets actifs
+    table: Projets
+    type: kanban
+    groupBy: Statut
+    filters:
+      - field: Statut
+        operator: not_equals
+        value: Terminé
+
+  - name: Tâches de la semaine
+    table: Tâches
+    type: list
+    filters:
+      - field: Échéance
+        operator: next_7_days
+    sorts:
+      - field: Priorité
+        direction: desc
+      - field: Échéance
+        direction: asc
+
+  - name: Calendrier projets
+    table: Projets
+    type: calendar
+    
+automations:
+  - name: Nouvelle tâche depuis email
+    description: "Créer une tâche quand un email important arrive"
+    trigger:
+      type: new_email
+      conditions:
+        - field: subject
+          operator: contains
+          value: "[URGENT]"
+    actions:
+      - type: create_record
+        table: Tâches
+        data:
+          Titre: "{{email.subject}}"
+          Priorité: Haute
+          Statut: À faire
+
+  - name: Notification projet en retard
+    description: "Alerter quand un projet dépasse sa date de fin"
+    trigger:
+      type: scheduled
+      schedule: "0 9 * * *"
+    actions:
+      - type: send_notification
+        conditions:
+          - table: Projets
+            field: Date de fin
+            operator: before
+            value: today
+            field2: Statut
+            operator2: not_equals
+            value2: Terminé
+
+dashboards:
+  - name: Vue d'ensemble
+    description: "Dashboard principal"
+    widgets:
+      - type: counter
+        title: "Clients actifs"
+        source: Clients
+        config:
+          filter:
+            field: Statut
+            value: Client actif
+            
+      - type: counter
+        title: "Projets en cours"
+        source: Projets
+        config:
+          filter:
+            field: Statut
+            value: En cours
+
+      - type: chart
+        title: "Répartition par statut"
+        source: Clients
+        config:
+          type: pie
+          groupBy: Statut
+
+      - type: list
+        title: "Tâches urgentes"
+        source: Tâches
+        config:
+          filter:
+            field: Priorité
+            value: Haute
+          limit: 5

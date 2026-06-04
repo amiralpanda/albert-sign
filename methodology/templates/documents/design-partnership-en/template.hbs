@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Design Partnership Agreement — {{clientName}}</title>
+  <style>
+    @page {
+      size: A4;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Georgia", "Times New Roman", serif;
+      font-size: 11pt;
+      line-height: 1.6;
+      color: #1a1a1a;
+      background: white;
+    }
+
+    .content {
+      padding: 0 20mm;
+    }
+
+    h1, h2, h3, .article-title, .sub-article-title, .annexe-header {
+      font-family: "Helvetica Neue", "Arial", "Helvetica", sans-serif;
+    }
+
+    h1 {
+      font-size: 18pt;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 2em;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      font-size: 12pt;
+      font-weight: bold;
+      margin-top: 1.8em;
+      margin-bottom: 0.6em;
+      text-transform: uppercase;
+    }
+
+    h3 {
+      font-size: 11pt;
+      font-weight: bold;
+      margin-top: 1.4em;
+      margin-bottom: 0.5em;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 2em;
+    }
+
+    .logo img {
+      width: 48px;
+      height: auto;
+    }
+
+    p {
+      margin-bottom: 0.8em;
+      text-align: justify;
+    }
+
+    .parties {
+      margin-bottom: 2em;
+    }
+
+    .party {
+      margin-bottom: 1.5em;
+    }
+
+    .party-label {
+      font-style: italic;
+      margin-top: 0.5em;
+    }
+
+    .variable {
+      background: #fff3cd;
+      padding: 0 3px;
+      border-radius: 2px;
+      border-bottom: 1px dashed #856404;
+    }
+
+    .empty-variable {
+      background: #f8d7da;
+      padding: 0 3px;
+      border-radius: 2px;
+      border-bottom: 1px dashed #721c24;
+      color: #721c24;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .article-title {
+      font-size: 12pt;
+      font-weight: bold;
+      margin-top: 1.8em;
+      margin-bottom: 0.6em;
+    }
+
+    .sub-article-title {
+      font-size: 11pt;
+      font-weight: bold;
+      margin-top: 1.2em;
+      margin-bottom: 0.4em;
+    }
+
+    .definitions-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1em 0;
+    }
+
+    .definitions-table td {
+      padding: 6px 10px;
+      vertical-align: top;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .definitions-table td:first-child {
+      font-weight: bold;
+      width: 180px;
+      white-space: nowrap;
+    }
+
+    .indent {
+      padding-left: 2em;
+    }
+
+    .indent p {
+      margin-bottom: 0.4em;
+    }
+
+    ol.roman {
+      list-style-type: lower-roman;
+      padding-left: 2em;
+      margin-bottom: 0.8em;
+    }
+
+    ol.roman li {
+      margin-bottom: 0.4em;
+      text-align: justify;
+    }
+
+    ul.dash {
+      list-style: none;
+      padding-left: 1.5em;
+    }
+
+    ul.dash li {
+      margin-bottom: 0.4em;
+      text-align: justify;
+    }
+
+    ul.dash li::before {
+      content: "–  ";
+      margin-left: -1.5em;
+    }
+
+    ul.bullet {
+      list-style: disc;
+      padding-left: 2em;
+    }
+
+    ul.bullet li {
+      margin-bottom: 0.3em;
+    }
+
+    .signature-block {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3em;
+      page-break-inside: avoid;
+    }
+
+    .signature-col {
+      width: 45%;
+      text-align: center;
+    }
+
+    .signature-col .label {
+      font-weight: bold;
+      margin-bottom: 0.5em;
+    }
+
+    .signature-col .line {
+      border-bottom: 1px solid #333;
+      height: 60px;
+      margin-bottom: 0.5em;
+    }
+
+    .signature-col .signature-img {
+      display: block;
+      max-height: 70px;
+      max-width: 100%;
+      margin: 0 auto 0.3em;
+    }
+
+    .signature-col .signature-name {
+      font-weight: bold;
+      margin-bottom: 0.2em;
+    }
+
+    .signature-col .signature-date {
+      font-size: 9pt;
+      color: #555;
+      margin-bottom: 0;
+    }
+
+    .annexe-header {
+      font-size: 14pt;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 1.5em;
+      text-transform: uppercase;
+    }
+
+    .annexe-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1em 0;
+    }
+
+    .annexe-table td {
+      padding: 8px 12px;
+      vertical-align: top;
+      border: 1px solid #ccc;
+    }
+
+    .annexe-table td:first-child {
+      font-weight: bold;
+      width: 200px;
+      background: #f8f8f8;
+    }
+
+    .page-number {
+      text-align: center;
+      font-size: 9pt;
+      color: #888;
+      margin-top: 2em;
+    }
+
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .page {
+        margin: 0;
+        padding: 0;
+      }
+      .variable {
+        background: none;
+        border: none;
+      }
+      .empty-variable {
+        background: none;
+        border: none;
+        color: inherit;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="content">
+
+  <div class="logo">
+    <img src="data:image/png;base64,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" alt="Atome" />
+  </div>
+
+  <h1>Design Partnership Agreement</h1>
+
+  <div class="parties">
+    <p class="center" style="font-weight: bold; font-size: 12pt;">BETWEEN THE UNDERSIGNED:</p>
+
+    <div class="party">
+      <p>
+        <strong>Atome Software</strong>, a simplified joint-stock company (soci&eacute;t&eacute; par actions
+        simplifi&eacute;e) with a share capital of 1,000 euros, having its registered office at
+        60 rue Fran&ccedil;ois 1er, 75008 Paris, France, registered with the Paris Trade and
+        Companies Register (Registre du Commerce et des Soci&eacute;t&eacute;s) under number
+        989&nbsp;735&nbsp;048, represented by Mr. J&eacute;r&eacute;my Foucray in his capacity as
+        Chief Executive Officer (directeur g&eacute;n&eacute;ral) of Rising Lab, a limited liability
+        company (soci&eacute;t&eacute; &agrave; responsabilit&eacute; limit&eacute;e) incorporated under Belgian law,
+        registered with the Crossroads Bank for Enterprises under number
+        BE&nbsp;0690.566.556, having its registered office at 54 Avenue Louise,
+        1050 Brussels, Belgium, acting as Chairwoman (Pr&eacute;sidente) of Atome Software,
+      </p>
+      <p class="party-label">Hereinafter referred to as the &ldquo;Provider&rdquo;,</p>
+      <p class="party-label">Of the first part,</p>
+    </div>
+
+    <p class="center" style="font-weight: bold;">AND</p>
+
+    <div class="party">
+      <p>
+        <span class="variable">{{clientName}}</span>,
+        <span class="variable">{{legalForm}}</span>,
+        having its registered office at <span class="variable">{{address}}</span>,
+        registered with the Trade and Companies Register (Registre du Commerce et des
+        Soci&eacute;t&eacute;s) of
+        <span class="variable">{{rcsCity}}</span>
+        under number <span class="variable">{{rcsNumber}}</span>,
+        represented by <span class="variable">{{legalRepName}}</span>
+        in his/her capacity as <span class="variable">{{legalRepTitle}}</span>,
+      </p>
+      <p class="party-label">Hereinafter referred to as the &ldquo;Client&rdquo;,</p>
+      <p class="party-label">Of the second part,</p>
+    </div>
+
+    <p>
+      The Provider and the Client are hereinafter individually referred to as a &ldquo;Party&rdquo;
+      and collectively as the &ldquo;Parties&rdquo;.
+    </p>
+  </div>
+
+  <h2>Background</h2>
+
+  <p>
+    The Provider develops a SaaS (&ldquo;Software-as-a-Service&rdquo;) software solution enabling
+    the creation of custom applications designed to facilitate day-to-day management and
+    organisation for professionals. This solution aims to provide businesses with a
+    collaborative and centralised workspace: users can create and customise their own
+    dashboards, organise and track their activities, and leverage data from the various
+    tools they choose to connect to the solution.
+  </p>
+
+  <p>
+    As part of the development and improvement of the solution, the Provider has
+    established a &ldquo;design partnership&rdquo; programme.
+  </p>
+
+  <p>
+    This programme enables the Client to access the solution in order to test it and
+    propose enhancements.
+  </p>
+
+  <p>
+    The Client is a professional seeking tools to facilitate its organisation, the
+    management of its engagements, and the handling of client requests on a daily basis.
+  </p>
+
+  <p>
+    The Parties have come together to formalise a partnership concerning the use of the
+    solution and the Client&rsquo;s feedback.
+  </p>
+
+  <p class="center" style="font-weight: bold; font-size: 12pt; margin-bottom: 1.5em;">
+    NOW, THEREFORE, THE PARTIES HAVE AGREED AS FOLLOWS:
+  </p>
+
+  <div class="article-title">1. DEFINITIONS</div>
+
+  <p>
+    In this agreement (hereinafter the &ldquo;Agreement&rdquo;), capitalised terms shall have the
+    meanings ascribed to them below, whether used in the singular or the plural.
+  </p>
+
+  <div class="article-title">2. PURPOSE OF THE AGREEMENT</div>
+
+  <p>
+    The Agreement sets out the terms and conditions governing access to and use of the
+    Solution, and the conditions under which the Client may provide feedback to the
+    Provider so that the latter may enhance the Solution as it sees fit.
+  </p>
+
+  <table class="definitions-table">
+    <tr>
+      <td>Administrator</td>
+      <td>Means any User designated by the Client who holds the rights necessary to manage the access rights and permissions of other Users within the Solution.</td>
+    </tr>
+    <tr>
+      <td>Client Data</td>
+      <td>Means all data, information, and content, including Personal Data, that the Client or its Users import into or generate within the Solution.</td>
+    </tr>
+    <tr>
+      <td>Personal Data</td>
+      <td>Means any information directly or indirectly identifying a natural person within the meaning of the General Data Protection Regulation (GDPR), for example: name, surname, telephone number, date of birth, address.</td>
+    </tr>
+    <tr>
+      <td>Confidential Information</td>
+      <td>Means any information, result, document, or data disclosed to either Party in connection with the Agreement or in contemplation thereof, regardless of the medium used (paper, database, etc.) or the form of such disclosure (written, oral, or visual).</td>
+    </tr>
+    <tr>
+      <td>Fee(s)</td>
+      <td>Means the amounts payable under the Agreement for the use of the Solution by the Client and the Users. The terms governing the Fee(s) and any support included are set out in Schedule&nbsp;1.</td>
+    </tr>
+    <tr>
+      <td>Solution</td>
+      <td>Means the SaaS (&ldquo;Software-as-a-Service&rdquo;) solution marketed by Atome Software under the trade name &ldquo;Atome&rdquo;, in its current version as well as all future versions.</td>
+    </tr>
+    <tr>
+      <td>User</td>
+      <td>Means the employees of the Client, or any other person authorised by the Client to access and use the Solution in the course of their professional duties.</td>
+    </tr>
+  </table>
+
+  <div class="article-title">3. PREREQUISITES</div>
+
+  <p>
+    The Client and each User must have access to a device (mobile phone, tablet, or
+    computer) connected to the internet and meeting the minimum technical specifications
+    required to use the Solution. The Client and the Users must carry out any necessary
+    updates to their equipment in order to use the Solution.
+  </p>
+
+  <div class="article-title">4. ROLES OF THE PARTIES</div>
+
+  <div class="sub-article-title">4.1. Roles of the Parties in the provision of the Solution</div>
+
+  <h3>4.1.1. Access to the Solution</h3>
+
+  <p>
+    The Administrator shall be responsible for creating, revoking, and maintaining the list
+    of User access credentials. Through the Solution, the Administrator may authorise
+    Users to access the Solution, up to the number of licences specified in Schedule&nbsp;1.
+  </p>
+
+  <p>
+    The Client shall notify the Provider in writing by any means when the number of Users
+    exceeds the limit authorised under the Agreement, so that the Fee(s) may be adjusted
+    accordingly. In any event, the Provider shall be entitled to audit the Client&rsquo;s use
+    of the Solution no more than once per year in order to verify compliance with the
+    Agreement.
+  </p>
+
+  <h3>4.1.2. Implementation</h3>
+
+  <p>
+    Implementation refers to the Client&rsquo;s onboarding onto the Solution. It encompasses
+    the items detailed in Schedule&nbsp;1, such as configuration, integration with the
+    Client&rsquo;s existing tools, and a demonstration of the core features, including dashboard
+    customisation.
+  </p>
+
+  <p>
+    As part of the implementation, the Provider undertakes to configure the workspace for
+    the Client according to its specific needs, in order to build a tool tailored to its
+    requirements.
+  </p>
+
+  <p>
+    To that end, the Provider shall use reasonable endeavours to customise the workspace
+    so as to meet the needs expressed by the Client, within the limits of the features
+    available at the time of implementation and those developed throughout the term of the
+    Agreement on the basis of the Client&rsquo;s feedback, as provided for in Article&nbsp;4.2
+    below.
+  </p>
+
+  <p>The cost and details of this phase are set out in Schedule&nbsp;1.</p>
+
+  <h3>4.1.3. Description of the Solution and support</h3>
+
+  <p>
+    The features of the Solution are described within the Solution itself and may evolve at
+    the Provider&rsquo;s discretion.
+  </p>
+
+  <p>
+    The Solution includes an artificial intelligence-based conversational agent offering
+    guidance on how to use the Solution and customise content based on the Client or the
+    User.
+  </p>
+
+  <p>
+    The Provider shall provide support to the Client and/or its Users in connection with
+    the use of the Solution, subject to the terms set out in Schedule&nbsp;1.
+  </p>
+
+  <div class="sub-article-title">4.2. Client&rsquo;s obligations regarding the use of the Solution</div>
+
+  <p>
+    The Client shall provide feedback to the Provider in writing by any means during its
+    use of the Solution.
+  </p>
+
+  <p>
+    The Client also undertakes to make itself available at least once per month for monthly
+    meetings to provide its feedback.
+  </p>
+
+  <p>
+    The Provider shall have sole discretion to determine whether or not to take the
+    Client&rsquo;s feedback into account in developing the Solution. However, in the event of a
+    blocking issue encountered by the Client in its use of the Solution, the Provider
+    undertakes to work with the Client to explore possible solutions and to prioritise the
+    necessary developments to a reasonable extent, taking into account the level of
+    complexity and the general interest of the enhancement for all users of the Solution.
+  </p>
+
+  <div class="article-title">5. LICENCE</div>
+
+  <div class="sub-article-title">5.1. Licence terms</div>
+
+  <p>
+    In consideration for the payment of the Fee(s), the Provider grants the Client a
+    non-exclusive, non-sublicensable licence to use the Solution. This licence is personal
+    to each User.
+  </p>
+
+  <p>
+    This licence is granted on a worldwide basis and shall remain in effect for the
+    duration of the Agreement.
+  </p>
+
+  <div class="sub-article-title">5.2. Licence restrictions</div>
+
+  <p>The Client shall refrain, and shall ensure that the Users do not attempt, from:</p>
+
+  <ol class="roman">
+    <li>Using the Solution for any illegal or unlawful purpose;</li>
+    <li>Using the Solution for any purpose other than those contemplated by the Agreement;</li>
+    <li>Creating derivative works based on the Solution;</li>
+    <li>Distributing, making available to third parties, reselling, or leasing the Solution or the credentials used to access the Solution;</li>
+    <li>Compromising the integrity or performance of the Solution;</li>
+    <li>Engaging in activities such as reverse engineering of the Solution;</li>
+    <li>Attempting to create a competing product or service by reproducing the features, functionalities, or graphical attributes of the Solution.</li>
+  </ol>
+
+  <div class="article-title">6. FINANCIAL TERMS</div>
+
+  <div class="sub-article-title">6.1. Price</div>
+
+  <p>
+    In consideration for the right of use granted under Article&nbsp;5 above, the Client
+    shall pay the Fee(s) set out in Schedule&nbsp;1.
+  </p>
+
+  <div class="sub-article-title">6.2. Payment frequency and method</div>
+
+  <p>
+    The Fee(s) shall be payable on a
+    <span class="variable">{{periodicite}}</span> basis. Payment shall be made by
+    <span class="variable">{{modePaiement}}</span> within thirty (30) days of the date
+    of issue of the invoice, to the following bank account:
+  </p>
+
+  <ul class="dash">
+    <li>Account holder: Atome Software</li>
+    <li>IBAN: FR76 1695 8000 0152 4503 1228 373</li>
+    <li>BIC: QNTOFRP1XXX</li>
+  </ul>
+
+  <p>
+    Any late payment shall automatically give rise to late-payment interest calculated in
+    accordance with Article L.&nbsp;441-10 of the French Commercial Code (Code de commerce),
+    together with a fixed indemnity of forty (40) euros for collection costs.
+  </p>
+
+  <div class="article-title">7. INTELLECTUAL PROPERTY</div>
+
+  <div class="sub-article-title">7.1. Provider&rsquo;s intellectual property</div>
+
+  <p>
+    The Provider retains all intellectual property rights in and to the Solution.
+  </p>
+
+  <p>
+    Any improvement, update, or new version of the Solution, whether or not based on
+    suggestions from the Client, shall be the exclusive property of the Provider.
+  </p>
+
+  <div class="sub-article-title">7.2. Client&rsquo;s data ownership</div>
+
+  <p>Client Data is and shall remain the property of the Client.</p>
+
+  <p>
+    Client Data shall not be used by the Provider except for the purpose of providing the
+    Solution and for statistical purposes aimed at improving the Solution, in which case
+    the Client Data shall be anonymised and shall not reveal any Personal Data or Client
+    Data.
+  </p>
+
+  <div class="article-title">8. DATA SECURITY AND CONFIDENTIALITY</div>
+
+  <div class="sub-article-title">8.1. Confidentiality</div>
+
+  <p>Each Party undertakes, with respect to Confidential Information:</p>
+
+  <ol class="roman">
+    <li>to maintain and handle such information with an appropriate degree of protection;</li>
+    <li>not to disclose it to any third party;</li>
+    <li>not to permit or facilitate, without the prior written consent of the disclosing Party, the publication or dissemination of such Confidential Information, and not to use it for any purpose other than those contemplated by the Agreement;</li>
+    <li>to ensure that any Users who may have access to Confidential Information maintain its confidential nature and prevent any disclosure;</li>
+    <li>to return to the other Party, upon request, any Confidential Information received in tangible form and to retain no copy or reproduction thereof.</li>
+  </ol>
+
+  <p>
+    A Party shall not be deemed to have breached the foregoing obligation if the
+    information in question:
+  </p>
+
+  <ol class="roman">
+    <li>was in the public domain at the time of its disclosure, or subsequently entered the public domain through no fault of that Party; or</li>
+    <li>was voluntarily disclosed by the relevant Party prior to the expiry of the Agreement.</li>
+  </ol>
+
+  <div class="sub-article-title">8.2. Security of Client Data</div>
+
+  <p>
+    The Provider undertakes to implement appropriate technical and organisational measures
+    to ensure a level of security commensurate with the risk and to preserve the security,
+    integrity, and confidentiality of Client Data against any destruction, loss, alteration,
+    unauthorised disclosure, or access.
+  </p>
+
+  <p>
+    Client Data is hosted within the European Union and is encrypted both in transit and at
+    rest.
+  </p>
+
+  <div class="article-title">9. LIABILITY</div>
+
+  <div class="sub-article-title">9.1. Limitation of liability</div>
+
+  <p>The Provider shall not be liable for:</p>
+
+  <ul class="dash">
+    <li>any damage or failure resulting from the equipment of the Client, any User, or any third party;</li>
+    <li>the responses provided by the artificial intelligence-based conversational agent (whether as to the accuracy of the information or any infringement of third-party intellectual property rights), nor for the use thereof by the Users;</li>
+    <li>any indirect damages, including loss of profits, loss of opportunity, commercial harm, or loss of clientele.</li>
+  </ul>
+
+  <div class="sub-article-title">9.2. Liability cap</div>
+
+  <p>
+    The aggregate liability of the Provider under the Agreement shall not exceed 120% of
+    the total amount of Fee(s) (excluding VAT) paid by the Client during the twelve (12)
+    months preceding the event giving rise to liability.
+  </p>
+
+  <p>
+    By way of exception, in the event of (i) irreversible data loss, defined as any loss of
+    Client Data that cannot be restored from backups or other recovery methods implemented
+    by the Provider, or (ii) prolonged unavailability of the Solution, defined as a
+    continuous service interruption exceeding twenty-four (24) hours, the Provider&rsquo;s
+    liability cap shall be increased to 150% of the total amount of Fee(s) (excluding VAT)
+    paid by the Client during the twelve (12) months preceding the event giving rise to
+    liability.
+  </p>
+
+  <div class="article-title">10. TERM</div>
+
+  <p>
+    The Agreement is entered into for an initial term of one (1) year from the date of its
+    execution. Upon expiry of this initial period, the Agreement shall automatically renew
+    for successive one-year periods, unless either Party terminates it by registered letter
+    with acknowledgement of receipt at least one (1) month prior to the relevant
+    anniversary date.
+  </p>
+
+  <div class="article-title">11. TERMINATION</div>
+
+  <p>
+    In the event of a breach, the aggrieved Party shall send the defaulting Party a
+    registered letter with acknowledgement of receipt setting out the breach(es) and
+    allowing a reasonable period for the defaulting Party to remedy such breach(es).
+  </p>
+
+  <p>
+    If, upon expiry of such period, the breach(es) persist(s), the aggrieved Party may
+    terminate the Agreement as of right by sending a further registered letter, without any
+    further formality.
+  </p>
+
+  <div class="article-title">12. CONSEQUENCES OF TERMINATION OR EXPIRY</div>
+
+  <p>
+    Upon termination or expiry of the Agreement, the Client and the Users shall no longer
+    have access to the Solution. The Client may request the Provider to retrieve its data
+    in .csv format within a maximum period of thirty (30) days from the date of termination
+    or expiry.
+  </p>
+
+  <p>
+    After this period, the Provider shall permanently delete the Client Data, except where
+    a legal or regulatory obligation requires its retention.
+  </p>
+
+  <div class="article-title">13. ELECTRONIC SIGNATURE</div>
+
+  <p>
+    If the Agreement is signed by the Parties by means of an electronic signature process
+    carried out by a third party that ensures the security and integrity of the digital
+    copies, in accordance with Articles&nbsp;1366 et seq. of the French Civil Code (Code
+    civil), the Parties agree that the electronically signed Agreement:
+  </p>
+
+  <ul class="dash">
+    <li>constitutes an original, such that the requirement to provide multiple originals under Article&nbsp;1375 of the French Civil Code is satisfied;</li>
+    <li>has the same evidentiary value as a handwritten signed document, and the Agreement may be relied upon by the Parties and produced in court as written evidence (preuve litt&eacute;rale).</li>
+  </ul>
+
+  <div class="article-title">14. GOVERNING LAW AND JURISDICTION</div>
+
+  <p>
+    The Agreement shall be governed by and construed in accordance with French law. Any
+    dispute arising out of or in connection with its interpretation or performance shall be
+    subject to the exclusive jurisdiction of the Paris Commercial Court (Tribunal des
+    Activit&eacute;s &Eacute;conomiques de Paris).
+  </p>
+
+  <div class="signature-block">
+    <div class="signature-col">
+      <div class="label">For the Provider</div>
+      {{#if editorSignatureImage}}
+        <img src="{{{editorSignatureImage}}}" alt="Signature" class="signature-img" />
+        <p class="signature-name">{{editorName}}</p>
+        <p class="signature-date">Signed on {{editorDate}}</p>
+      {{else}}
+        <div class="line"></div>
+        <p>Full Name</p>
+      {{/if}}
+    </div>
+    <div class="signature-col">
+      <div class="label">For the Client</div>
+      {{#if clientSignatureImage}}
+        <img src="{{{clientSignatureImage}}}" alt="Signature" class="signature-img" />
+        <p class="signature-name">{{clientSignerName}}</p>
+        {{#if clientSignerTitle}}<p class="signature-name">{{clientSignerTitle}}</p>{{/if}}
+        <p class="signature-date">Signed on {{clientSignedDate}}</p>
+      {{else}}
+        <div class="line"></div>
+        <p>Full Name</p>
+      {{/if}}
+    </div>
+  </div>
+
+  <div class="annexe-header" style="page-break-before: always;">Schedule 1 &ndash; Specific Terms</div>
+
+  <p>
+    This Schedule forms an integral part of the Agreement entered into between the
+    Provider and the Client.
+  </p>
+
+  <div class="sub-article-title">1. Licence fees</div>
+
+  <p>
+    The annual Fee is calculated on the basis of the number of User licences subscribed,
+    at the unit rate specified below:
+  </p>
+
+  <table class="annexe-table">
+    <tr>
+      <td>Annual fee per licence:</td>
+      <td><span class="variable">{{prixLicenceAnnuel}}</span> euros, excluding VAT</td>
+    </tr>
+    <tr>
+      <td>Number of licences:</td>
+      <td><span class="variable">{{nbLicences}}</span> User licences</td>
+    </tr>
+    <tr>
+      <td style="font-weight: bold;">Annual Fee:</td>
+      <td style="font-weight: bold;"><span class="variable">{{nbLicences}}</span> &times; <span class="variable">{{prixLicenceAnnuel}}</span> = <span class="variable">{{redevanceAnnuelle}}</span> euros, excluding VAT</td>
+    </tr>
+  </table>
+
+  <div class="sub-article-title">2. Payment terms</div>
+
+  <table class="annexe-table">
+    <tr>
+      <td>Frequency:</td>
+      <td><span class="variable">{{periodicite}}</span></td>
+    </tr>
+    <tr>
+      <td>Payment method:</td>
+      <td><span class="variable">{{modePaiement}}</span></td>
+    </tr>
+  </table>
+
+  <div class="sub-article-title">3. Support</div>
+
+  <p>
+    Support is included in the Fee(s) for up to
+    <span class="variable">{{heuresSupport}}</span> hours per month.
+    Support is available Monday to Friday from 9:00 AM to 5:00 PM (CET) and can be
+    reached at the following contact details: jeremy@atome.sh / +32 473 422 778.
+  </p>
+
+  <p>
+    Any additional support hours beyond the included allowance shall be invoiced at a rate
+    of <span class="variable">{{tarifSupportSupp}}</span> euros excluding VAT per hour,
+    it being specified that each hour commenced shall be billed as a full hour.
+  </p>
+
+  <div class="sub-article-title">4. Initial setup (implementation)</div>
+
+  <p>The implementation covers the following scope:</p>
+
+  <ul class="bullet">
+    <li>Configuration of the Solution</li>
+    <li>Integration with the Client&rsquo;s tools and systems</li>
+    <li>Initial setup and configuration</li>
+    <li>Presentation and explanation of core features</li>
+  </ul>
+
+  <p>
+    The initial setup includes
+    <span class="variable">{{heuresParametrage}}</span> hours of configuration and
+    deployment. The initial setup is provided free of charge.
+  </p>
+
+</div>
+</body>
+</html>
