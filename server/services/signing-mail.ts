@@ -4,6 +4,11 @@ import { fileURLToPath } from 'url'
 import Handlebars from 'handlebars'
 import { gmailCredentialsAvailable, sendViaGmailApi } from './gmail-send.js'
 import { resendConfigured, sendViaResend } from './resend-send.js'
+import {
+  resolveSigningLocale,
+  formatSigningDate,
+  type SigningLocale,
+} from './signing-locale.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const WORKSPACE_ROOT = join(__dirname, '..', '..')
@@ -19,9 +24,19 @@ export interface SigningEmailContext {
   signedAt?: string
 }
 
-function compileTemplate(name: string, context: SigningEmailContext): string {
-  const path = join(EMAILS_DIR, name)
-  if (!existsSync(path)) throw new Error(`Email template not found: ${name}`)
+const INVITE_TEMPLATE: Record<SigningLocale, string> = {
+  fr: 'contract-signing-invite.hbs',
+  en: 'contract-signing-invite.en.hbs',
+}
+
+const COMPLETE_TEMPLATE: Record<SigningLocale, string> = {
+  fr: 'contract-signing-complete.hbs',
+  en: 'contract-signing-complete.en.hbs',
+}
+
+function compileTemplate(fileName: string, context: SigningEmailContext): string {
+  const path = join(EMAILS_DIR, fileName)
+  if (!existsSync(path)) throw new Error(`Email template not found: ${fileName}`)
   const source = readFileSync(path, 'utf-8')
   return Handlebars.compile(source)(context)
 }
@@ -105,29 +120,45 @@ async function sendMail(options: {
   }
 }
 
+function invitationSubject(locale: SigningLocale, documentTitle: string): string {
+  const inviter = getInviterName()
+  if (locale === 'en') {
+    return `${inviter} invites you to sign: ${documentTitle}`
+  }
+  return `${inviter} vous invite à signer : ${documentTitle}`
+}
+
+function completionSubject(locale: SigningLocale, documentTitle: string): string {
+  if (locale === 'en') return `Signed document: ${documentTitle}`
+  return `Document signé : ${documentTitle}`
+}
+
 export async function sendSigningInvitationEmail(params: {
   to: string
+  templateName: string
   documentTitle: string
   clientName: string
   signUrl: string
   expiresAt: string
 }): Promise<{ sent: boolean; error?: string }> {
+  const locale = resolveSigningLocale(params.templateName)
   const context: SigningEmailContext = {
     inviterName: getInviterName(),
     documentTitle: params.documentTitle,
     clientName: params.clientName,
     signUrl: params.signUrl,
-    expiresAt: params.expiresAt,
+    expiresAt: formatSigningDate(params.expiresAt, locale),
   }
 
-  const html = compileTemplate('contract-signing-invite.hbs', context)
-  const subject = `${getInviterName()} vous invite à signer : ${params.documentTitle}`
+  const html = compileTemplate(INVITE_TEMPLATE[locale], context)
+  const subject = invitationSubject(locale, params.documentTitle)
 
   return sendMail({ to: params.to, subject, html })
 }
 
 export async function sendSigningCompletionEmail(params: {
   to: string
+  templateName: string
   documentTitle: string
   clientName: string
   signerName: string
@@ -135,6 +166,7 @@ export async function sendSigningCompletionEmail(params: {
   pdfBuffer: Buffer
   pdfFilename: string
 }): Promise<{ sent: boolean; error?: string }> {
+  const locale = resolveSigningLocale(params.templateName)
   const cc = process.env.SIGNING_COMPLETION_CC || 'finance@atome.sh'
 
   const context: SigningEmailContext = {
@@ -147,8 +179,8 @@ export async function sendSigningCompletionEmail(params: {
     signedAt: params.signedAt,
   }
 
-  const html = compileTemplate('contract-signing-complete.hbs', context)
-  const subject = `Document signé : ${params.documentTitle}`
+  const html = compileTemplate(COMPLETE_TEMPLATE[locale], context)
+  const subject = completionSubject(locale, params.documentTitle)
 
   return sendMail({
     to: params.to,
@@ -159,10 +191,7 @@ export async function sendSigningCompletionEmail(params: {
   })
 }
 
+/** @deprecated Use formatSigningDate(iso, resolveSigningLocale(templateName)) */
 export function formatExpiresAtFr(iso: string): string {
-  return new Date(iso).toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
+  return formatSigningDate(iso, 'fr')
 }

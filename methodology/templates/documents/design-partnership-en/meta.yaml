@@ -1,5 +1,6 @@
 name: Design Partnership Agreement
 description: Standard agreement for an Atome design partnership with a client
+locale: en
 type: contract
 documentType: design_partnership
 requiresSignature: true

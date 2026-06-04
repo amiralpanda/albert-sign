@@ -1,5 +1,6 @@
 name: Contrat de Design Partnership
 description: Contrat standard pour un partenariat design Atome avec un client
+locale: fr
 type: contract
 documentType: design_partnership
 requiresSignature: true

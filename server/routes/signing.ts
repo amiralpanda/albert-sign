@@ -19,15 +19,14 @@ import {
   completeSigningRequest,
   getDocumentContext,
   getDocumentContextForRequest,
-  formatSignedDateFr,
   listRequestsForDocument,
   updateSigningRequest,
 } from '../services/signing-store.js'
 import {
   sendSigningInvitationEmail,
   sendSigningCompletionEmail,
-  formatExpiresAtFr,
 } from '../services/signing-mail.js'
+import { resolveSigningLocale, formatSigningDate } from '../services/signing-locale.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const WORKSPACE_ROOT = join(__dirname, '..', '..')
@@ -115,10 +114,11 @@ signingRouter.post('/requests', async (req, res) => {
     if (sendEmail) {
       emailResult = await sendSigningInvitationEmail({
         to: request.signerEmail,
+        templateName: ctx.doc.templateName,
         documentTitle: ctx.doc.title,
         clientName: ctx.client.name,
         signUrl,
-        expiresAt: formatExpiresAtFr(request.expiresAt),
+        expiresAt: request.expiresAt,
       })
       if (emailResult.sent) {
         request.invitationEmailSent = true
@@ -205,12 +205,15 @@ signingRouter.post('/resend-invitation', async (req, res) => {
     if (!ctx) return res.status(404).json({ error: 'Document not found' })
 
     const signUrl = buildSignUrl(latest.token)
+    const templateName =
+      latest.documentSnapshot?.templateName ?? ctx.doc.templateName
     const emailResult = await sendSigningInvitationEmail({
       to: latest.signerEmail,
+      templateName,
       documentTitle: ctx.doc.title,
       clientName: ctx.client.name,
       signUrl,
-      expiresAt: formatExpiresAtFr(latest.expiresAt),
+      expiresAt: latest.expiresAt,
     })
 
     if (emailResult.sent) {
@@ -233,7 +236,7 @@ signingRouter.get('/:token', async (req, res) => {
     if (!request) return res.status(404).json({ error: 'Lien invalide' })
 
     const active = await ensureRequestActive(request)
-    if (!active.ok) return res.status(410).json({ error: 'error' in active ? active.error : 'Expired' })
+    if (!active.ok) return res.status(410).json({ error: active.error })
 
     const ctx = getDocumentContextForRequest(request)
     if (!ctx) return res.status(404).json({ error: 'Document not found' })
@@ -282,7 +285,7 @@ signingRouter.post('/:token/sign', async (req, res) => {
     if (!request) return res.status(404).json({ error: 'Lien invalide' })
 
     const active = await ensureRequestActive(request)
-    if (!active.ok) return res.status(410).json({ error: 'error' in active ? active.error : 'Expired' })
+    if (!active.ok) return res.status(410).json({ error: active.error })
 
     const ctx = getDocumentContextForRequest(request)
     if (!ctx) return res.status(404).json({ error: 'Document not found' })
@@ -296,7 +299,10 @@ signingRouter.post('/:token/sign', async (req, res) => {
     }
 
     const email = (signerEmail || request.signerEmail).trim().toLowerCase()
-    const signedDate = formatSignedDateFr()
+    const templateName =
+      request.documentSnapshot?.templateName ?? ctx.doc.templateName
+    const locale = resolveSigningLocale(templateName)
+    const signedDate = formatSigningDate(new Date(), locale)
 
     const updatedVariables = {
       ...ctx.doc.variables,
@@ -359,6 +365,7 @@ signingRouter.post('/:token/sign', async (req, res) => {
 
     const completionEmail = await sendSigningCompletionEmail({
       to: email,
+      templateName,
       documentTitle: signedDoc.title,
       clientName: ctx.client.name,
       signerName,
