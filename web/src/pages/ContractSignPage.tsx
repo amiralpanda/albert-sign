@@ -8,13 +8,8 @@ interface SigningPayload {
   clientName: string
   signerEmail: string
   expiresAt: string
-  previewReady: boolean
-  previewStatus: 'pending' | 'ready' | 'failed'
-  documentUrl?: string
-  html?: string
+  html: string
 }
-
-const POLL_MS = 800
 
 export function ContractSignPage() {
   const { token } = useParams<{ token: string }>()
@@ -34,45 +29,18 @@ export function ContractSignPage() {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
-  const loadSigning = useCallback(async () => {
-    if (!token) return null
-    const res = await fetch(apiUrl(`/api/signing/${token}`))
-    const data = await res.json()
-    if (!res.ok) throw new Error(data.error || 'Lien invalide')
-    return data as SigningPayload
-  }, [token])
-
   useEffect(() => {
     if (!token) return
-    let cancelled = false
-    let pollTimer: ReturnType<typeof setTimeout> | undefined
-
-    const load = async () => {
-      try {
-        const data = await loadSigning()
-        if (cancelled || !data) return
+    fetch(apiUrl(`/api/signing/${token}`))
+      .then(async res => {
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || 'Lien invalide')
         setPayload(data)
         setSignerEmail(data.signerEmail || '')
-        setLoading(false)
-
-        const canView = data.previewReady || data.html
-        if (!canView && data.previewStatus !== 'failed') {
-          pollTimer = setTimeout(load, POLL_MS)
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Erreur de chargement')
-          setLoading(false)
-        }
-      }
-    }
-
-    load()
-    return () => {
-      cancelled = true
-      if (pollTimer) clearTimeout(pollTimer)
-    }
-  }, [token, loadSigning])
+      })
+      .catch(err => setError(err instanceof Error ? err.message : 'Erreur de chargement'))
+      .finally(() => setLoading(false))
+  }, [token])
 
   const resizeCanvas = useCallback(() => {
     const canvas = canvasRef.current
@@ -170,11 +138,11 @@ export function ContractSignPage() {
     }
   }
 
-  if (loading && !payload) {
+  if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-50 gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-zinc-400" />
-        <p className="text-sm text-zinc-500">Ouverture du contrat…</p>
+        <p className="text-sm text-zinc-500">Chargement du contrat…</p>
       </div>
     )
   }
@@ -204,18 +172,14 @@ export function ContractSignPage() {
     )
   }
 
-  if (!payload) return null
-
-  const pdfSrc = payload.previewReady && token ? apiUrl(`/api/signing/${token}/document`) : null
-  const htmlFallback = payload.html
-  const documentReady = Boolean(pdfSrc || htmlFallback)
+  if (!payload?.html) return null
 
   return (
     <div className="min-h-screen bg-zinc-100 flex flex-col">
-      <header className="bg-white border-b border-zinc-200 flex-shrink-0 z-20">
-        <div className="px-4 py-3 flex items-center gap-3">
+      <header className="bg-white border-b border-zinc-200 flex-shrink-0 z-20 shadow-sm">
+        <div className="px-4 py-3 flex items-center gap-3 max-w-7xl mx-auto w-full">
           <FileText className="w-5 h-5 text-zinc-700 flex-shrink-0" />
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">Atome</p>
             <h1 className="text-sm font-semibold text-zinc-900 truncate">{payload.documentTitle}</h1>
             <p className="text-xs text-zinc-500 truncate">{payload.clientName}</p>
@@ -223,69 +187,58 @@ export function ContractSignPage() {
         </div>
       </header>
 
-      <div className="flex-1 flex flex-col md:flex-row min-h-0">
+      <div className="flex-1 flex flex-col lg:flex-row min-h-0 max-w-7xl mx-auto w-full">
         <section
-          className="md:flex-1 min-h-0 flex flex-col bg-zinc-200 md:border-r border-zinc-300"
+          className="lg:flex-1 min-h-0 flex flex-col bg-white lg:m-4 lg:rounded-lg lg:border lg:border-zinc-200 lg:shadow-sm overflow-hidden"
           aria-label="Contrat"
         >
-          {!documentReady ? (
-            <div className="flex-1 flex flex-col items-center justify-center gap-3 min-h-[42vh] md:min-h-0">
-              <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
-              <p className="text-sm text-zinc-600">Préparation du document…</p>
-            </div>
-          ) : pdfSrc ? (
-            <iframe
-              title="Contrat PDF"
-              src={pdfSrc}
-              className="w-full flex-1 min-h-[42vh] md:min-h-0 border-0 bg-white"
-            />
-          ) : (
+          <div className="flex-1 min-h-[50vh] lg:min-h-0 overflow-hidden">
             <iframe
               title="Contrat"
-              srcDoc={htmlFallback}
-              className="w-full flex-1 min-h-[42vh] md:min-h-0 border-0 bg-white"
+              srcDoc={payload.html}
+              className="w-full h-full min-h-[50vh] lg:min-h-[480px] border-0"
               sandbox="allow-same-origin"
             />
-          )}
+          </div>
         </section>
 
         <aside
-          className="w-full md:w-[min(100%,420px)] lg:w-[440px] flex-shrink-0 bg-white border-t md:border-t-0 flex flex-col md:max-h-[calc(100vh-3.5rem)] md:sticky md:top-0 md:self-start"
+          className="w-full lg:w-[400px] flex-shrink-0 bg-white lg:m-4 lg:ml-0 lg:rounded-lg lg:border lg:border-zinc-200 lg:shadow-sm flex flex-col"
           aria-label="Signature"
         >
-          <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          <div className="flex-1 overflow-y-auto p-6 space-y-4">
             <h2 className="text-base font-semibold text-zinc-900">Votre signature</h2>
 
             <label className="block text-sm">
-              <span className="font-medium text-zinc-700">Nom complet *</span>
+              <span className="block font-medium text-zinc-700 mb-1">Nom complet *</span>
               <input
                 type="text"
                 value={signerName}
                 onChange={e => setSignerName(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-zinc-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/20"
                 placeholder="Prénom Nom"
                 autoComplete="name"
               />
             </label>
 
             <label className="block text-sm">
-              <span className="font-medium text-zinc-700">Qualité</span>
+              <span className="block font-medium text-zinc-700 mb-1">Qualité</span>
               <input
                 type="text"
                 value={signerTitle}
                 onChange={e => setSignerTitle(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-zinc-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/20"
                 placeholder="Gérant, Président…"
               />
             </label>
 
             <label className="block text-sm">
-              <span className="font-medium text-zinc-700">Email *</span>
+              <span className="block font-medium text-zinc-700 mb-1">Email *</span>
               <input
                 type="email"
                 value={signerEmail}
                 onChange={e => setSignerEmail(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-zinc-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/20"
                 autoComplete="email"
               />
             </label>
@@ -303,7 +256,7 @@ export function ContractSignPage() {
               </div>
               <canvas
                 ref={canvasRef}
-                className="w-full h-28 rounded-lg border-2 border-dashed border-zinc-300 bg-white touch-none cursor-crosshair"
+                className="w-full h-28 rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 touch-none cursor-crosshair"
                 onMouseDown={startDraw}
                 onMouseMove={draw}
                 onMouseUp={endDraw}
@@ -319,7 +272,7 @@ export function ContractSignPage() {
                 type="checkbox"
                 checked={consent}
                 onChange={e => setConsent(e.target.checked)}
-                className="mt-1 flex-shrink-0"
+                className="mt-1 flex-shrink-0 rounded border-zinc-300"
               />
               <span>
                 J&apos;ai lu le contrat et je le signe électroniquement. Je reconnais que cette signature
@@ -330,12 +283,12 @@ export function ContractSignPage() {
             {submitError && <p className="text-sm text-red-600">{submitError}</p>}
           </div>
 
-          <div className="flex-shrink-0 p-5 pt-0 border-t border-zinc-100 bg-white">
+          <div className="flex-shrink-0 p-6 pt-0 border-t border-zinc-100">
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={submitting || !consent || !signerName.trim() || !documentReady}
-              className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-zinc-900 text-white text-sm font-semibold hover:bg-zinc-800 disabled:opacity-50"
+              disabled={submitting || !consent || !signerName.trim()}
+              className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-zinc-900 text-white text-sm font-semibold hover:bg-zinc-800 disabled:opacity-50 transition-colors"
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
               Signer le document

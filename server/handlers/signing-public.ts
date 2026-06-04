@@ -5,10 +5,6 @@ import {
   ensureRequestActive,
   getDocumentContextForRequest,
 } from '../services/signing-store.js'
-import {
-  resolvePreviewPdfUrl,
-  schedulePreviewPdf,
-} from '../services/signing-preview.js'
 
 export async function handleSigningPublicGet(
   req: VercelRequest,
@@ -43,25 +39,18 @@ export async function handleSigningPublicGet(
       return
     }
 
-    const pdfUrl = await resolvePreviewPdfUrl(request)
-    if (!pdfUrl && request.previewStatus !== 'pending') {
-      schedulePreviewPdf(request)
+    const html = renderDocumentHtml(ctx.doc.templateName, ctx.doc.variables)
+    if (!html) {
+      res.status(500).json({ error: 'Failed to render document' })
+      return
     }
-
-    const previewReady = Boolean(pdfUrl)
-    const html =
-      !previewReady ? renderDocumentHtml(ctx.doc.templateName, ctx.doc.variables) : undefined
 
     res.status(200).json({
       documentTitle: ctx.doc.title,
       clientName: ctx.clientName,
       signerEmail: request.signerEmail,
       expiresAt: request.expiresAt,
-      previewReady,
-      previewStatus: previewReady ? 'ready' : request.previewStatus ?? 'pending',
-      /** Same-origin URL — inline display, never triggers download */
-      documentUrl: previewReady ? `/api/signing/${token}/document` : undefined,
-      html: html ?? undefined,
+      html,
     })
   } catch (error) {
     console.error('Error loading signing page:', error)

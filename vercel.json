@@ -59,6 +59,16 @@
       "destination": "/sign.html"
     }
   ],
+  "headers": [
+    {
+      "source": "/sign.html",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    }
+  ],
   "env": {
     "NODE_ENV": "production",
     "SIGNING_PUBLIC_BASE_URL": "https://sign.atome.software"

@@ -6,7 +6,15 @@ import path from 'path'
 export default defineConfig({
   root: path.resolve(__dirname),
   publicDir: 'public',
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: 'strip-crossorigin',
+      transformIndexHtml(html) {
+        return html.replace(/ crossorigin/g, '')
+      },
+    },
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

@@ -17,7 +17,6 @@ import {
   type SigningDocumentSnapshot,
 } from '../services/signing-store.js'
 import { sendSigningInvitationEmail } from '../services/signing-mail.js'
-import { schedulePreviewPdf } from '../services/signing-preview.js'
 import { handleSigningCompletePost } from '../handlers/signing-complete.js'
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
@@ -153,8 +152,6 @@ signingRouter.post('/requests', async (req, res) => {
       invitationEmail: emailResult,
     })
 
-    // Preview PDF after response (avoid Vercel timeout on POST /requests)
-    setImmediate(() => schedulePreviewPdf(request))
   } catch (error) {
     console.error('Error creating signing request:', error)
     res.status(500).json({ error: 'Failed to create signing request' })
