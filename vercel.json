@@ -9,15 +9,37 @@
       "maxDuration": 10,
       "memory": 128
     },
-    "api/signing-handler.ts": {
+    "api/signing/[token].ts": {
+      "maxDuration": 15,
+      "memory": 256,
+      "includeFiles": "methodology/templates/**,config/**"
+    },
+    "api/signing/[token]/sign.ts": {
       "maxDuration": 60,
       "memory": 2048,
+      "includeFiles": "methodology/templates/**,config/**"
+    },
+    "api/signing-handler.ts": {
+      "maxDuration": 30,
+      "memory": 1024,
       "includeFiles": "methodology/templates/**,config/**"
     }
   },
   "rewrites": [
     {
-      "source": "/api/signing/:path*",
+      "source": "/api/signing/requests",
+      "destination": "/api/signing-handler"
+    },
+    {
+      "source": "/api/signing/requests/:path*",
+      "destination": "/api/signing-handler"
+    },
+    {
+      "source": "/api/signing/resend-invitation",
+      "destination": "/api/signing-handler"
+    },
+    {
+      "source": "/api/signing/status/:path*",
       "destination": "/api/signing-handler"
     },
     {

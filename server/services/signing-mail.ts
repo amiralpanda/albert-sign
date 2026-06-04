@@ -60,16 +60,6 @@ async function sendMail(options: {
   html: string
   attachments?: { filename: string; content: Buffer }[]
 }): Promise<{ sent: boolean; error?: string }> {
-  if (resendConfigured()) {
-    return sendViaResend({
-      to: options.to,
-      cc: options.cc,
-      subject: options.subject,
-      html: options.html,
-      attachments: options.attachments,
-    })
-  }
-
   if (smtpConfigured()) {
     try {
       const nodemailer = await import('nodemailer')
@@ -102,6 +92,16 @@ async function sendMail(options: {
     }
   }
 
+  if (resendConfigured()) {
+    return sendViaResend({
+      to: options.to,
+      cc: options.cc,
+      subject: options.subject,
+      html: options.html,
+      attachments: options.attachments,
+    })
+  }
+
   if (gmailCredentialsAvailable()) {
     return sendViaGmailApi({
       from: getFromAddress(),
@@ -116,7 +116,7 @@ async function sendMail(options: {
   return {
     sent: false,
     error:
-      'No mail transport: set RESEND_API_KEY, SMTP_*, or Google token in config/credentials/',
+      'No mail transport: set SMTP_* (Google Workspace), RESEND_API_KEY, or Gmail credentials locally',
   }
 }
 

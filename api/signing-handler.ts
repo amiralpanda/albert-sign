@@ -1,8 +1,4 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import {
-  handleSigningPublicGet,
-  parseSigningUrl,
-} from '../server/handlers/signing-public.js'
 
 type Handler = (req: VercelRequest, res: VercelResponse) => Promise<unknown>
 
@@ -19,13 +15,8 @@ async function getSigningHandler(): Promise<Handler> {
   return signingHandler
 }
 
+/** Admin routes only (requests, status, resend). Public GET/POST use api/signing/[token]*. */
 export default async function vercelHandler(req: VercelRequest, res: VercelResponse) {
-  const route = parseSigningUrl(req.url || '')
-
-  if (route.kind === 'public-get' && req.method === 'GET' && route.token) {
-    return handleSigningPublicGet(req, res, route.token)
-  }
-
   const handler = await getSigningHandler()
   return handler(req, res)
 }
