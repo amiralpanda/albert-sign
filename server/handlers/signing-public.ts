@@ -1,10 +1,14 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { hashDocument, renderDocumentHtml } from '../services/document-hash.js'
+import { hashDocument } from '../services/document-hash.js'
 import {
   getRequestByToken,
   ensureRequestActive,
   getDocumentContextForRequest,
 } from '../services/signing-store.js'
+import {
+  resolvePreviewPdfUrl,
+  schedulePreviewPdf,
+} from '../services/signing-preview.js'
 
 export async function handleSigningPublicGet(
   req: VercelRequest,
@@ -39,10 +43,9 @@ export async function handleSigningPublicGet(
       return
     }
 
-    const html = renderDocumentHtml(ctx.doc.templateName, ctx.doc.variables)
-    if (!html) {
-      res.status(500).json({ error: 'Failed to render document' })
-      return
+    let pdfUrl = await resolvePreviewPdfUrl(request)
+    if (!pdfUrl && request.previewStatus !== 'pending') {
+      schedulePreviewPdf(request)
     }
 
     res.status(200).json({
@@ -50,7 +53,9 @@ export async function handleSigningPublicGet(
       clientName: ctx.clientName,
       signerEmail: request.signerEmail,
       expiresAt: request.expiresAt,
-      html,
+      previewReady: Boolean(pdfUrl),
+      previewStatus: pdfUrl ? 'ready' : request.previewStatus ?? 'pending',
+      pdfUrl: pdfUrl ?? undefined,
     })
   } catch (error) {
     console.error('Error loading signing page:', error)

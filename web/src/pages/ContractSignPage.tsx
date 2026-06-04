@@ -8,8 +8,12 @@ interface SigningPayload {
   clientName: string
   signerEmail: string
   expiresAt: string
-  html: string
+  previewReady: boolean
+  previewStatus: 'pending' | 'ready' | 'failed'
+  pdfUrl?: string
 }
+
+const POLL_MS = 800
 
 export function ContractSignPage() {
   const { token } = useParams<{ token: string }>()
@@ -20,6 +24,7 @@ export function ContractSignPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState(false)
+  const [doneMessage, setDoneMessage] = useState<string | null>(null)
 
   const [signerName, setSignerName] = useState('')
   const [signerTitle, setSignerTitle] = useState('')
@@ -28,18 +33,44 @@ export function ContractSignPage() {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
+  const loadSigning = useCallback(async () => {
+    if (!token) return null
+    const res = await fetch(apiUrl(`/api/signing/${token}`))
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'Lien invalide')
+    return data as SigningPayload
+  }, [token])
+
   useEffect(() => {
     if (!token) return
-    fetch(apiUrl(`/api/signing/${token}`))
-      .then(async res => {
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error || 'Lien invalide')
+    let cancelled = false
+    let pollTimer: ReturnType<typeof setTimeout> | undefined
+
+    const load = async () => {
+      try {
+        const data = await loadSigning()
+        if (cancelled || !data) return
         setPayload(data)
         setSignerEmail(data.signerEmail || '')
-      })
-      .catch(err => setError(err instanceof Error ? err.message : 'Erreur de chargement'))
-      .finally(() => setLoading(false))
-  }, [token])
+        setLoading(false)
+
+        if (!data.previewReady && data.previewStatus !== 'failed') {
+          pollTimer = setTimeout(load, POLL_MS)
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Erreur de chargement')
+          setLoading(false)
+        }
+      }
+    }
+
+    load()
+    return () => {
+      cancelled = true
+      if (pollTimer) clearTimeout(pollTimer)
+    }
+  }, [token, loadSigning])
 
   const resizeCanvas = useCallback(() => {
     const canvas = canvasRef.current
@@ -126,6 +157,10 @@ export function ContractSignPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Échec de la signature')
       setDone(true)
+      setDoneMessage(
+        data.message ||
+          'Signature enregistrée. Vous recevrez le contrat signé par email sous peu.',
+      )
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Erreur')
     } finally {
@@ -133,11 +168,11 @@ export function ContractSignPage() {
     }
   }
 
-  if (loading) {
+  if (loading && !payload) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-50 gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-zinc-400" />
-        <p className="text-sm text-zinc-500">Chargement du contrat…</p>
+        <p className="text-sm text-zinc-500">Ouverture du contrat…</p>
       </div>
     )
   }
@@ -161,15 +196,15 @@ export function ContractSignPage() {
             <Check className="w-7 h-7" />
           </div>
           <h1 className="text-xl font-semibold text-zinc-900">Merci, document signé</h1>
-          <p className="text-sm text-zinc-600">
-            Vous recevrez un email avec le contrat signé en pièce jointe.
-          </p>
+          <p className="text-sm text-zinc-600">{doneMessage}</p>
         </div>
       </div>
     )
   }
 
   if (!payload) return null
+
+  const pdfReady = payload.previewReady && payload.pdfUrl
 
   return (
     <div className="min-h-screen bg-zinc-100 flex flex-col">
@@ -184,23 +219,24 @@ export function ContractSignPage() {
         </div>
       </header>
 
-      {/* Contrat à gauche, signature à droite (empilé sur très petit écran) */}
       <div className="flex-1 flex flex-col md:flex-row min-h-0">
         <section
-          className="md:flex-1 min-h-0 flex flex-col bg-white md:border-r border-zinc-200"
-          aria-label="Contrat"
+          className="md:flex-1 min-h-0 flex flex-col bg-zinc-200 md:border-r border-zinc-300"
+          aria-label="Contrat PDF"
         >
-          <div className="px-4 py-2 border-b border-zinc-100 bg-zinc-50 md:hidden">
-            <p className="text-xs font-medium text-zinc-600">Document — faites défiler pour lire</p>
-          </div>
-          <div className="flex-1 min-h-[42vh] md:min-h-0 overflow-hidden">
+          {!pdfReady ? (
+            <div className="flex-1 flex flex-col items-center justify-center gap-3 min-h-[42vh] md:min-h-0">
+              <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
+              <p className="text-sm text-zinc-600">Préparation du PDF…</p>
+              <p className="text-xs text-zinc-500">Quelques secondes</p>
+            </div>
+          ) : (
             <iframe
               title="Contrat"
-              srcDoc={payload.html}
-              className="w-full h-full min-h-[42vh] md:min-h-0 border-0"
-              sandbox="allow-same-origin"
+              src={`${payload.pdfUrl}#toolbar=0&navpanes=0`}
+              className="w-full flex-1 min-h-[42vh] md:min-h-0 border-0 bg-white"
             />
-          </div>
+          )}
         </section>
 
         <aside
@@ -288,7 +324,7 @@ export function ContractSignPage() {
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={submitting || !consent || !signerName.trim()}
+              disabled={submitting || !consent || !signerName.trim() || !pdfReady}
               className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-zinc-900 text-white text-sm font-semibold hover:bg-zinc-800 disabled:opacity-50"
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}

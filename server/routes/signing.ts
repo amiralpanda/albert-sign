@@ -2,17 +2,13 @@ import { Router } from 'express'
 import { appendFileSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
-import { hashDocument, renderDocumentHtml } from '../services/document-hash.js'
-import { documentPdfFilename } from '../lib/document-filename.js'
+import { hashDocument } from '../services/document-hash.js'
 import { requiresSignatureForTemplate } from '../services/document-type.js'
 import {
   buildSignUrl,
   createSigningRequest,
   getLatestRequestForDocument,
-  getRequestByToken,
   cancelSigningRequest,
-  ensureRequestActive,
-  completeSigningRequest,
   getDocumentContext,
   getDocumentContextForRequest,
   listRequestsForDocument,
@@ -20,11 +16,10 @@ import {
   type SigningDocContext,
   type SigningDocumentSnapshot,
 } from '../services/signing-store.js'
-import {
-  sendSigningInvitationEmail,
-  sendSigningCompletionEmail,
-} from '../services/signing-mail.js'
-import { resolveSigningLocale, formatSigningDate } from '../services/signing-locale.js'
+import { sendSigningInvitationEmail } from '../services/signing-mail.js'
+import { schedulePreviewPdf } from '../services/signing-preview.js'
+import { handleSigningCompletePost } from '../handlers/signing-complete.js'
+import type { VercelRequest, VercelResponse } from '@vercel/node'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const WORKSPACE_ROOT = join(__dirname, '..', '..')
@@ -37,20 +32,6 @@ function logClientEvent(clientSlug: string, type: string, data: Record<string, u
   } catch {
     /* ignore */
   }
-}
-
-const signAttempts = new Map<string, { count: number; resetAt: number }>()
-
-function rateLimitSign(ip: string): boolean {
-  const now = Date.now()
-  const entry = signAttempts.get(ip)
-  if (!entry || entry.resetAt < now) {
-    signAttempts.set(ip, { count: 1, resetAt: now + 60_000 })
-    return true
-  }
-  if (entry.count >= 10) return false
-  entry.count++
-  return true
 }
 
 export const signingRouter = Router()
@@ -140,6 +121,8 @@ signingRouter.post('/requests', async (req, res) => {
       signerName,
       documentSnapshot: snapshot,
     })
+
+    schedulePreviewPdf(request)
 
     const signUrl = buildSignUrl(request.token)
     let emailResult: { sent: boolean; error?: string } = { sent: false }
@@ -266,164 +249,10 @@ signingRouter.post('/resend-invitation', async (req, res) => {
 // ========== PUBLIC (token) ==========
 
 signingRouter.get('/:token', async (req, res) => {
-  try {
-    const request = await getRequestByToken(req.params.token)
-    if (!request) return res.status(404).json({ error: 'Lien invalide' })
-
-    const active = await ensureRequestActive(request)
-    if (!active.ok) return res.status(410).json({ error: active.error })
-
-    const ctx = getDocumentContextForRequest(request)
-    if (!ctx) return res.status(404).json({ error: 'Document not found' })
-
-    const currentHash = hashDocument(ctx.doc.templateName, ctx.doc.variables)
-    if (currentHash !== request.documentHash) {
-      return res.status(409).json({
-        error:
-          'Le contrat a été modifié depuis l\'envoi de ce lien. Demandez un nouveau lien de signature.',
-      })
-    }
-
-    const html = renderDocumentHtml(ctx.doc.templateName, ctx.doc.variables)
-    if (!html) return res.status(500).json({ error: 'Failed to render document' })
-
-    res.json({
-      documentTitle: ctx.doc.title,
-      clientName: ctx.clientName,
-      signerEmail: request.signerEmail,
-      expiresAt: request.expiresAt,
-      html,
-    })
-  } catch (error) {
-    console.error('Error loading signing page:', error)
-    res.status(500).json({ error: 'Failed to load signing page' })
-  }
+  const { handleSigningPublicGet } = await import('../handlers/signing-public.js')
+  return handleSigningPublicGet(req as unknown as VercelRequest, res as unknown as VercelResponse, req.params.token)
 })
 
 signingRouter.post('/:token/sign', async (req, res) => {
-  try {
-    const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.ip || 'unknown'
-    if (!rateLimitSign(ip)) {
-      return res.status(429).json({ error: 'Trop de tentatives. Réessayez dans une minute.' })
-    }
-
-    const { signerName, signerTitle, signerEmail, signatureImage, consent } = req.body
-
-    if (!consent) {
-      return res.status(400).json({ error: 'Vous devez accepter de signer le document.' })
-    }
-    if (!signerName || !signatureImage) {
-      return res.status(400).json({ error: 'Nom et signature sont requis.' })
-    }
-
-    const request = await getRequestByToken(req.params.token)
-    if (!request) return res.status(404).json({ error: 'Lien invalide' })
-
-    const active = await ensureRequestActive(request)
-    if (!active.ok) return res.status(410).json({ error: active.error })
-
-    const ctx = getDocumentContextForRequest(request)
-    if (!ctx) return res.status(404).json({ error: 'Document not found' })
-
-    const currentHash = hashDocument(ctx.doc.templateName, ctx.doc.variables)
-    if (currentHash !== request.documentHash) {
-      return res.status(409).json({
-        error:
-          'Le contrat a été modifié depuis l\'envoi de ce lien. Demandez un nouveau lien de signature.',
-      })
-    }
-
-    const email = (signerEmail || request.signerEmail).trim().toLowerCase()
-    const templateName =
-      request.documentSnapshot?.templateName ?? ctx.doc.templateName
-    const locale = resolveSigningLocale(templateName)
-    const signedDate = formatSigningDate(new Date(), locale)
-
-    const updatedVariables = {
-      ...ctx.doc.variables,
-      clientSignatureImage: signatureImage,
-      clientSignerName: signerName,
-      clientSignerTitle: signerTitle || '',
-      clientSignedDate: signedDate,
-    }
-
-    if (request.documentSnapshot) {
-      request.documentSnapshot.variables = updatedVariables
-    }
-
-    const signedDoc = { ...ctx.doc, variables: updatedVariables }
-    const { generateDocumentPdfBuffer } = await import('../services/document-pdf.js')
-    const pdfBuffer = await generateDocumentPdfBuffer(signedDoc)
-    const filename = documentPdfFilename(signedDoc.title)
-
-    const atome = await import('../services/atome-client.js')
-    const file = await atome.uploadFile(filename, 'application/pdf', pdfBuffer, {
-      isOrganizationAccessible: true,
-    })
-
-    try {
-      const uploads = await import('../services/atome-uploads.js')
-      uploads.logUpload({
-        atomeFileId: file.id,
-        sourceType: 'document',
-        sourceId: request.documentId,
-        clientSlug: ctx.slug,
-        filename: file.filename,
-        sizeBytes: pdfBuffer.length,
-        uploadedAt: new Date().toISOString(),
-      })
-    } catch {
-      /* registry optional on serverless */
-    }
-
-    const { syncSignedDocumentToAtome } = await import('../services/atome-document-sync.js')
-    const syncResult = await syncSignedDocumentToAtome({
-      fileId: file.id,
-      documentId: request.documentId,
-      templateName: signedDoc.templateName,
-      signerEmail: email,
-      signedAt: new Date().toISOString().slice(0, 10),
-    })
-
-    const audit = {
-      ip,
-      userAgent: req.headers['user-agent'],
-      consentAt: new Date().toISOString(),
-      signerName,
-      signerTitle,
-      signerEmail: email,
-    }
-
-    await completeSigningRequest(request, audit, file.id)
-
-    const completionEmail = await sendSigningCompletionEmail({
-      to: email,
-      templateName,
-      documentTitle: signedDoc.title,
-      clientName: ctx.clientName,
-      signerName,
-      signedAt: signedDate,
-      pdfBuffer,
-      pdfFilename: filename,
-    })
-
-    logClientEvent(ctx.slug, 'contract_signed', {
-      documentId: request.documentId,
-      requestId: request.id,
-      atomeFileId: file.id,
-      signerEmail: email,
-      atomeSync: syncResult,
-      completionEmailSent: completionEmail.sent,
-    })
-
-    res.json({
-      success: true,
-      atomeFileId: file.id,
-      completionEmail,
-      atomeMetadataSync: syncResult,
-    })
-  } catch (error) {
-    console.error('Error completing signature:', error)
-    res.status(500).json({ error: 'Failed to complete signature' })
-  }
+  return handleSigningCompletePost(req as unknown as VercelRequest, res as unknown as VercelResponse, req.params.token)
 })
