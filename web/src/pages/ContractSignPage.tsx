@@ -10,7 +10,8 @@ interface SigningPayload {
   expiresAt: string
   previewReady: boolean
   previewStatus: 'pending' | 'ready' | 'failed'
-  pdfUrl?: string
+  documentUrl?: string
+  html?: string
 }
 
 const POLL_MS = 800
@@ -54,7 +55,8 @@ export function ContractSignPage() {
         setSignerEmail(data.signerEmail || '')
         setLoading(false)
 
-        if (!data.previewReady && data.previewStatus !== 'failed') {
+        const canView = data.previewReady || data.html
+        if (!canView && data.previewStatus !== 'failed') {
           pollTimer = setTimeout(load, POLL_MS)
         }
       } catch (err) {
@@ -204,7 +206,9 @@ export function ContractSignPage() {
 
   if (!payload) return null
 
-  const pdfReady = payload.previewReady && payload.pdfUrl
+  const pdfSrc = payload.previewReady && token ? apiUrl(`/api/signing/${token}/document`) : null
+  const htmlFallback = payload.html
+  const documentReady = Boolean(pdfSrc || htmlFallback)
 
   return (
     <div className="min-h-screen bg-zinc-100 flex flex-col">
@@ -222,19 +226,25 @@ export function ContractSignPage() {
       <div className="flex-1 flex flex-col md:flex-row min-h-0">
         <section
           className="md:flex-1 min-h-0 flex flex-col bg-zinc-200 md:border-r border-zinc-300"
-          aria-label="Contrat PDF"
+          aria-label="Contrat"
         >
-          {!pdfReady ? (
+          {!documentReady ? (
             <div className="flex-1 flex flex-col items-center justify-center gap-3 min-h-[42vh] md:min-h-0">
               <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
-              <p className="text-sm text-zinc-600">Préparation du PDF…</p>
-              <p className="text-xs text-zinc-500">Quelques secondes</p>
+              <p className="text-sm text-zinc-600">Préparation du document…</p>
             </div>
+          ) : pdfSrc ? (
+            <iframe
+              title="Contrat PDF"
+              src={pdfSrc}
+              className="w-full flex-1 min-h-[42vh] md:min-h-0 border-0 bg-white"
+            />
           ) : (
             <iframe
               title="Contrat"
-              src={`${payload.pdfUrl}#toolbar=0&navpanes=0`}
+              srcDoc={htmlFallback}
               className="w-full flex-1 min-h-[42vh] md:min-h-0 border-0 bg-white"
+              sandbox="allow-same-origin"
             />
           )}
         </section>
@@ -324,7 +334,7 @@ export function ContractSignPage() {
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={submitting || !consent || !signerName.trim() || !pdfReady}
+              disabled={submitting || !consent || !signerName.trim() || !documentReady}
               className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-zinc-900 text-white text-sm font-semibold hover:bg-zinc-800 disabled:opacity-50"
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}

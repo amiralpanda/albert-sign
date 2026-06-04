@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { hashDocument } from '../services/document-hash.js'
+import { hashDocument, renderDocumentHtml } from '../services/document-hash.js'
 import {
   getRequestByToken,
   ensureRequestActive,
@@ -43,19 +43,25 @@ export async function handleSigningPublicGet(
       return
     }
 
-    let pdfUrl = await resolvePreviewPdfUrl(request)
+    const pdfUrl = await resolvePreviewPdfUrl(request)
     if (!pdfUrl && request.previewStatus !== 'pending') {
       schedulePreviewPdf(request)
     }
+
+    const previewReady = Boolean(pdfUrl)
+    const html =
+      !previewReady ? renderDocumentHtml(ctx.doc.templateName, ctx.doc.variables) : undefined
 
     res.status(200).json({
       documentTitle: ctx.doc.title,
       clientName: ctx.clientName,
       signerEmail: request.signerEmail,
       expiresAt: request.expiresAt,
-      previewReady: Boolean(pdfUrl),
-      previewStatus: pdfUrl ? 'ready' : request.previewStatus ?? 'pending',
-      pdfUrl: pdfUrl ?? undefined,
+      previewReady,
+      previewStatus: previewReady ? 'ready' : request.previewStatus ?? 'pending',
+      /** Same-origin URL — inline display, never triggers download */
+      documentUrl: previewReady ? `/api/signing/${token}/document` : undefined,
+      html: html ?? undefined,
     })
   } catch (error) {
     console.error('Error loading signing page:', error)

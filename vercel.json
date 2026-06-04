@@ -14,6 +14,10 @@
       "memory": 256,
       "includeFiles": "methodology/templates/**,config/**"
     },
+    "api/signing/[token]/document.ts": {
+      "maxDuration": 15,
+      "memory": 256
+    },
     "api/signing/preview/[token].ts": {
       "maxDuration": 60,
       "memory": 2048,
@@ -31,6 +35,9 @@
     }
   },
   "rewrites": [
+    {
+      "handle": "filesystem"
+    },
     {
       "source": "/api/signing/requests",
       "destination": "/api/signing-handler"
