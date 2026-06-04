@@ -1,12 +1,14 @@
-/** Tailwind scope for sign.atome.software — avoids scanning 500+ presentation slides */
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const dir = path.dirname(fileURLToPath(import.meta.url))
+
+/** Tailwind scope for sign.atome.software */
 export default {
   darkMode: 'class',
   content: [
-    './sign.html',
-    './src/sign-main.tsx',
-    './src/pages/ContractSignPage.tsx',
-    './src/components/ui/Icon.tsx',
-    './src/lib/api-base.ts',
+    path.join(dir, 'sign.html'),
+    path.join(dir, 'src/**/*.{ts,tsx}'),
   ],
   theme: {
     extend: {
