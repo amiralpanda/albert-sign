@@ -2,13 +2,9 @@ import { Router } from 'express'
 import { appendFileSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
-import * as store from '../services/file-store.js'
-import * as uploads from '../services/atome-uploads.js'
-import * as atome from '../services/atome-client.js'
 import { hashDocument, renderDocumentHtml } from '../services/document-hash.js'
-import { generateDocumentPdfBuffer, documentPdfFilename } from '../services/document-pdf.js'
+import { documentPdfFilename } from '../services/document-pdf.js'
 import { requiresSignatureForTemplate } from '../services/document-type.js'
-import { syncSignedDocumentToAtome } from '../services/atome-document-sync.js'
 import {
   buildSignUrl,
   createSigningRequest,
@@ -21,6 +17,8 @@ import {
   getDocumentContextForRequest,
   listRequestsForDocument,
   updateSigningRequest,
+  type SigningDocContext,
+  type SigningDocumentSnapshot,
 } from '../services/signing-store.js'
 import {
   sendSigningInvitationEmail,
@@ -76,14 +74,54 @@ signingRouter.get('/requests', async (req, res) => {
 
 signingRouter.post('/requests', async (req, res) => {
   try {
-    const { documentId, signerEmail, signerName, sendEmail = true } = req.body
+    const {
+      documentId,
+      signerEmail,
+      signerName,
+      sendEmail = true,
+      clientSlug: bodySlug,
+      clientName: bodyClientName,
+      documentSnapshot: bodySnapshot,
+    } = req.body
 
     if (!documentId || !signerEmail) {
       return res.status(400).json({ error: 'documentId and signerEmail are required' })
     }
 
-    const ctx = getDocumentContext(documentId)
-    if (!ctx) return res.status(404).json({ error: 'Document not found' })
+    let ctx: SigningDocContext | null = null
+    let snapshot: SigningDocumentSnapshot | undefined = bodySnapshot
+
+    const snapshotClientName = bodySnapshot?.clientName || bodyClientName
+    if (bodySlug && bodySnapshot?.templateName && bodySnapshot?.title && bodySnapshot?.variables && snapshotClientName) {
+      snapshot = {
+        templateName: bodySnapshot.templateName,
+        title: bodySnapshot.title,
+        clientId: bodySnapshot.clientId ?? '',
+        clientName: snapshotClientName,
+        variables: { ...bodySnapshot.variables },
+      }
+      ctx = {
+        doc: {
+          id: documentId,
+          clientId: snapshot.clientId,
+          templateName: snapshot.templateName,
+          title: snapshot.title,
+          variables: { ...snapshot.variables },
+        },
+        clientName: snapshot.clientName,
+        slug: bodySlug,
+      }
+    } else {
+      ctx = await getDocumentContext(documentId)
+      if (!ctx) return res.status(404).json({ error: 'Document not found' })
+      snapshot = {
+        templateName: ctx.doc.templateName,
+        title: ctx.doc.title,
+        clientId: ctx.doc.clientId,
+        clientName: ctx.clientName,
+        variables: { ...ctx.doc.variables },
+      }
+    }
 
     if (!requiresSignatureForTemplate(ctx.doc.templateName)) {
       return res.status(400).json({ error: 'This document type does not require electronic signature' })
@@ -100,12 +138,7 @@ signingRouter.post('/requests', async (req, res) => {
       documentHash,
       signerEmail,
       signerName,
-      documentSnapshot: {
-        templateName: ctx.doc.templateName,
-        title: ctx.doc.title,
-        clientId: ctx.doc.clientId,
-        variables: { ...ctx.doc.variables },
-      },
+      documentSnapshot: snapshot,
     })
 
     const signUrl = buildSignUrl(request.token)
@@ -116,7 +149,7 @@ signingRouter.post('/requests', async (req, res) => {
         to: request.signerEmail,
         templateName: ctx.doc.templateName,
         documentTitle: ctx.doc.title,
-        clientName: ctx.client.name,
+        clientName: ctx.clientName,
         signUrl,
         expiresAt: request.expiresAt,
       })
@@ -171,6 +204,7 @@ signingRouter.get('/status/:documentId', async (req, res) => {
     if (!clientSlug) return res.status(400).json({ error: 'clientSlug required' })
 
     const latest = await getLatestRequestForDocument(req.params.documentId, clientSlug)
+    const uploads = await import('../services/atome-uploads.js')
     const upload = uploads.getActiveUploadForSource('document', req.params.documentId)
 
     let albertStatus: 'draft' | 'pending_signature' | 'signed' = 'draft'
@@ -201,7 +235,8 @@ signingRouter.post('/resend-invitation', async (req, res) => {
       return res.status(404).json({ error: 'No pending signing request for this document' })
     }
 
-    const ctx = getDocumentContextForRequest(latest) ?? getDocumentContext(documentId)
+    const ctx =
+      getDocumentContextForRequest(latest) ?? (await getDocumentContext(documentId))
     if (!ctx) return res.status(404).json({ error: 'Document not found' })
 
     const signUrl = buildSignUrl(latest.token)
@@ -211,7 +246,7 @@ signingRouter.post('/resend-invitation', async (req, res) => {
       to: latest.signerEmail,
       templateName,
       documentTitle: ctx.doc.title,
-      clientName: ctx.client.name,
+      clientName: ctx.clientName,
       signUrl,
       expiresAt: latest.expiresAt,
     })
@@ -254,7 +289,7 @@ signingRouter.get('/:token', async (req, res) => {
 
     res.json({
       documentTitle: ctx.doc.title,
-      clientName: ctx.client.name,
+      clientName: ctx.clientName,
       signerEmail: request.signerEmail,
       expiresAt: request.expiresAt,
       html,
@@ -312,25 +347,22 @@ signingRouter.post('/:token/sign', async (req, res) => {
       clientSignedDate: signedDate,
     }
 
-    try {
-      store.updateDocument(request.documentId, { variables: updatedVariables })
-    } catch {
-      /* read-only fs on Vercel */
-    }
-
     if (request.documentSnapshot) {
       request.documentSnapshot.variables = updatedVariables
     }
 
     const signedDoc = { ...ctx.doc, variables: updatedVariables }
+    const { generateDocumentPdfBuffer } = await import('../services/document-pdf.js')
     const pdfBuffer = await generateDocumentPdfBuffer(signedDoc)
     const filename = documentPdfFilename(signedDoc.title)
 
+    const atome = await import('../services/atome-client.js')
     const file = await atome.uploadFile(filename, 'application/pdf', pdfBuffer, {
       isOrganizationAccessible: true,
     })
 
     try {
+      const uploads = await import('../services/atome-uploads.js')
       uploads.logUpload({
         atomeFileId: file.id,
         sourceType: 'document',
@@ -344,6 +376,7 @@ signingRouter.post('/:token/sign', async (req, res) => {
       /* registry optional on serverless */
     }
 
+    const { syncSignedDocumentToAtome } = await import('../services/atome-document-sync.js')
     const syncResult = await syncSignedDocumentToAtome({
       fileId: file.id,
       documentId: request.documentId,
@@ -367,7 +400,7 @@ signingRouter.post('/:token/sign', async (req, res) => {
       to: email,
       templateName,
       documentTitle: signedDoc.title,
-      clientName: ctx.client.name,
+      clientName: ctx.clientName,
       signerName,
       signedAt: signedDate,
       pdfBuffer,

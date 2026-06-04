@@ -1,12 +1,12 @@
 import { createHash } from 'crypto'
 import Handlebars from 'handlebars'
-import * as store from './file-store.js'
+import { getDocumentTemplate } from './document-templates.js'
 
 export function renderDocumentHtml(
   templateName: string,
   variables: Record<string, string>,
 ): string | null {
-  const result = store.getDocumentTemplate(templateName)
+  const result = getDocumentTemplate(templateName)
   if (!result) return null
   const compiled = Handlebars.compile(result.template)
   return compiled(variables)

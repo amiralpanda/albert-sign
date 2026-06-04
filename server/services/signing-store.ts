@@ -3,7 +3,6 @@ import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'fs'
 import { v4 as uuid } from 'uuid'
-import * as store from './file-store.js'
 import * as blob from './signing-blob.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -16,7 +15,20 @@ export interface SigningDocumentSnapshot {
   templateName: string
   title: string
   clientId: string
+  clientName: string
   variables: Record<string, string>
+}
+
+export interface SigningDocContext {
+  doc: {
+    id: string
+    clientId: string
+    templateName: string
+    title: string
+    variables: Record<string, string>
+  }
+  clientName: string
+  slug: string
 }
 
 export interface SigningAudit {
@@ -264,41 +276,41 @@ export async function cancelSigningRequest(
   return req
 }
 
-export function getDocumentContext(documentId: string): {
-  doc: store.DocumentDraft
-  client: store.Client
-  slug: string
-} | null {
+/** Local dev / Albert monorepo — reads clients/ on disk */
+export async function getDocumentContext(documentId: string): Promise<SigningDocContext | null> {
+  const store = await import('./file-store.js')
   const doc = store.getDocumentById(documentId)
   if (!doc) return null
   const client = store.getClientById(doc.clientId)
   if (!client) return null
-  return { doc, client, slug: client.slug }
+  return {
+    doc: {
+      id: doc.id,
+      clientId: doc.clientId,
+      templateName: doc.templateName,
+      title: doc.title,
+      variables: doc.variables,
+    },
+    clientName: client.name,
+    slug: client.slug,
+  }
 }
 
-/** Resolve document for signing (snapshot on Vercel, else live file) */
-export function getDocumentContextForRequest(request: SigningRequest): {
-  doc: store.DocumentDraft
-  client: store.Client
-  slug: string
-} | null {
-  if (request.documentSnapshot) {
-    const client = store.getClientBySlug(request.clientSlug)
-    if (!client) return null
-    const snap = request.documentSnapshot
-    const doc: store.DocumentDraft = {
+/** Prod: snapshot in Blob — no file-store */
+export function getDocumentContextForRequest(request: SigningRequest): SigningDocContext | null {
+  const snap = request.documentSnapshot
+  if (!snap?.clientName) return null
+  return {
+    doc: {
       id: request.documentId,
       clientId: snap.clientId,
       templateName: snap.templateName,
       title: snap.title,
       variables: snap.variables,
-      status: 'draft',
-      createdAt: request.createdAt,
-      updatedAt: request.createdAt,
-    }
-    return { doc, client, slug: request.clientSlug }
+    },
+    clientName: snap.clientName,
+    slug: request.clientSlug,
   }
-  return getDocumentContext(request.documentId)
 }
 
 export function formatSignedDateFr(date = new Date()): string {

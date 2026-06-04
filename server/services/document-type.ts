@@ -1,11 +1,10 @@
 import { readFileSync, existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
-import * as store from './file-store.js'
+import { getDocumentTemplate } from './document-templates.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const WORKSPACE_ROOT = join(__dirname, '..', '..')
-const TYPE_MAP_PATH = join(WORKSPACE_ROOT, 'config', 'albert-document-types.json')
+const TYPE_MAP_PATH = join(__dirname, '..', '..', 'config', 'albert-document-types.json')
 
 const SIGNATURE_REQUIRED = new Set(['design_partnership', 'nda', 'amendment'])
 
@@ -22,11 +21,8 @@ function loadTypeMap(): Record<string, string> {
 }
 
 export function resolveDocumentType(templateName: string): string {
-  const template = store.getDocumentTemplate(templateName)
-  const meta = template?.meta as store.DocumentTemplateMeta & {
-    documentType?: string
-    requiresSignature?: boolean
-  }
+  const template = getDocumentTemplate(templateName)
+  const meta = template?.meta
   if (meta?.documentType) return meta.documentType
 
   const map = loadTypeMap()
@@ -41,8 +37,8 @@ export function requiresSignature(documentType: string): boolean {
 }
 
 export function requiresSignatureForTemplate(templateName: string): boolean {
-  const template = store.getDocumentTemplate(templateName)
-  const meta = template?.meta as store.DocumentTemplateMeta & { requiresSignature?: boolean }
+  const template = getDocumentTemplate(templateName)
+  const meta = template?.meta
   if (meta?.requiresSignature === true) return true
   if (meta?.requiresSignature === false) return false
   return requiresSignature(resolveDocumentType(templateName))

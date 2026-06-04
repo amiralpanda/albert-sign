@@ -1,11 +1,15 @@
 import Handlebars from 'handlebars'
-import * as store from './file-store.js'
+import { getDocumentTemplate } from './document-templates.js'
 import { launchBrowser } from './browser.js'
 
-export async function generateDocumentPdfBuffer(
-  doc: store.DocumentDraft,
-): Promise<Buffer> {
-  const result = store.getDocumentTemplate(doc.templateName)
+export interface PdfDocumentInput {
+  templateName: string
+  title: string
+  variables: Record<string, string>
+}
+
+export async function generateDocumentPdfBuffer(doc: PdfDocumentInput): Promise<Buffer> {
+  const result = getDocumentTemplate(doc.templateName)
   if (!result) throw new Error(`Template not found: ${doc.templateName}`)
 
   const compiled = Handlebars.compile(result.template)

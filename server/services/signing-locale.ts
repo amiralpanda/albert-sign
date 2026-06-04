@@ -1,12 +1,10 @@
-import * as store from './file-store.js'
+import { getDocumentTemplate } from './document-templates.js'
 
 export type SigningLocale = 'fr' | 'en'
 
-/** Email + date locale from document template (meta.locale or `-en` suffix). */
 export function resolveSigningLocale(templateName: string): SigningLocale {
-  const template = store.getDocumentTemplate(templateName)
-  const meta = template?.meta as store.DocumentTemplateMeta & { locale?: string }
-  const raw = meta?.locale?.trim().toLowerCase()
+  const template = getDocumentTemplate(templateName)
+  const raw = template?.meta?.locale?.trim().toLowerCase()
   if (raw === 'en' || raw === 'english') return 'en'
   if (raw === 'fr' || raw === 'french' || raw === 'français') return 'fr'
   if (templateName.endsWith('-en') || templateName.includes('-en-')) return 'en'

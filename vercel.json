@@ -5,10 +5,14 @@
   "outputDirectory": "web/dist",
   "framework": null,
   "functions": {
+    "api/health.ts": {
+      "maxDuration": 10,
+      "memory": 128
+    },
     "api/[...path].ts": {
       "maxDuration": 60,
       "memory": 2048,
-      "includeFiles": "clients/**,methodology/templates/**,config/**,server/**"
+      "includeFiles": "methodology/templates/**,config/**"
     }
   },
   "rewrites": [
