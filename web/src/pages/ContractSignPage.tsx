@@ -2,6 +2,11 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import { Check, Loader2, FileText } from '@/components/ui/Icon'
 import { apiUrl } from '@/lib/api-base'
+import {
+  ensureSignatureFont,
+  isCanvasEmpty,
+  renderTypedSignatureImage,
+} from '@/lib/signature-image'
 
 interface SigningPayload {
   documentTitle: string
@@ -10,6 +15,8 @@ interface SigningPayload {
   expiresAt: string
   html: string
 }
+
+type SignatureMode = 'type' | 'draw'
 
 export function ContractSignPage() {
   const { token } = useParams<{ token: string }>()
@@ -28,6 +35,12 @@ export function ContractSignPage() {
   const [consent, setConsent] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [signatureMode, setSignatureMode] = useState<SignatureMode>('type')
+  const [hasDrawn, setHasDrawn] = useState(false)
+
+  useEffect(() => {
+    void ensureSignatureFont()
+  }, [])
 
   useEffect(() => {
     if (!token) return
@@ -60,10 +73,11 @@ export function ContractSignPage() {
   }, [])
 
   useEffect(() => {
+    if (signatureMode !== 'draw') return
     resizeCanvas()
     window.addEventListener('resize', resizeCanvas)
     return () => window.removeEventListener('resize', resizeCanvas)
-  }, [resizeCanvas, payload])
+  }, [resizeCanvas, payload, signatureMode])
 
   const getCanvasPoint = (e: React.MouseEvent | React.TouchEvent) => {
     const canvas = canvasRef.current!
@@ -89,30 +103,46 @@ export function ContractSignPage() {
     const p = getCanvasPoint(e)
     ctx?.lineTo(p.x, p.y)
     ctx?.stroke()
+    setHasDrawn(true)
   }
 
   const endDraw = () => {
     drawing.current = false
   }
 
-  const clearSignature = () => {
+  const clearDrawSignature = () => {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
     ctx.clearRect(0, 0, canvas.width, canvas.height)
+    setHasDrawn(false)
     resizeCanvas()
   }
 
+  const hasValidSignature =
+    signatureMode === 'type' ? signerName.trim().length > 1 : hasDrawn
+
   const handleSubmit = async () => {
-    if (!token || !consent || !signerName.trim()) return
+    if (!token || !consent || !signerName.trim() || !hasValidSignature) return
     setSubmitting(true)
     setSubmitError(null)
 
-    const canvas = canvasRef.current
-    const signatureImage = canvas?.toDataURL('image/png')
-
     try {
+      let signatureImage: string
+      if (signatureMode === 'type') {
+        await ensureSignatureFont()
+        signatureImage = renderTypedSignatureImage(signerName.trim())
+      } else {
+        const canvas = canvasRef.current
+        if (!canvas || isCanvasEmpty(canvas)) {
+          setSubmitError('Dessinez votre signature ou utilisez le mode Écrire.')
+          setSubmitting(false)
+          return
+        }
+        signatureImage = canvas.toDataURL('image/png')
+      }
+
       const res = await fetch(apiUrl(`/api/signing/${token}/sign`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -137,6 +167,13 @@ export function ContractSignPage() {
       setSubmitting(false)
     }
   }
+
+  const modeBtnClass = (active: boolean) =>
+    `flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
+      active
+        ? 'bg-white text-zinc-900 shadow-sm'
+        : 'text-zinc-600 hover:text-zinc-900'
+    }`
 
   if (loading) {
     return (
@@ -246,25 +283,62 @@ export function ContractSignPage() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-zinc-700">Signature *</span>
+              </div>
+
+              <div className="flex rounded-lg border border-zinc-200 p-1 bg-zinc-100 mb-3">
                 <button
                   type="button"
-                  onClick={clearSignature}
-                  className="text-xs text-zinc-500 hover:text-zinc-800 underline"
+                  className={modeBtnClass(signatureMode === 'type')}
+                  onClick={() => setSignatureMode('type')}
                 >
-                  Effacer
+                  Écrire
+                </button>
+                <button
+                  type="button"
+                  className={modeBtnClass(signatureMode === 'draw')}
+                  onClick={() => setSignatureMode('draw')}
+                >
+                  Dessiner
                 </button>
               </div>
-              <canvas
-                ref={canvasRef}
-                className="w-full h-28 rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 touch-none cursor-crosshair"
-                onMouseDown={startDraw}
-                onMouseMove={draw}
-                onMouseUp={endDraw}
-                onMouseLeave={endDraw}
-                onTouchStart={startDraw}
-                onTouchMove={draw}
-                onTouchEnd={endDraw}
-              />
+
+              {signatureMode === 'type' ? (
+                <div className="rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 h-28 flex items-center justify-center px-4 overflow-hidden">
+                  {signerName.trim() ? (
+                    <p
+                      className="text-[2rem] leading-none text-zinc-900 truncate max-w-full"
+                      style={{ fontFamily: '"Dancing Script", cursive' }}
+                    >
+                      {signerName.trim()}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-zinc-400">Aperçu — saisissez votre nom ci-dessus</p>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <div className="flex justify-end mb-1">
+                    <button
+                      type="button"
+                      onClick={clearDrawSignature}
+                      className="text-xs text-zinc-500 hover:text-zinc-800 underline"
+                    >
+                      Effacer
+                    </button>
+                  </div>
+                  <canvas
+                    ref={canvasRef}
+                    className="w-full h-28 rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 touch-none cursor-crosshair"
+                    onMouseDown={startDraw}
+                    onMouseMove={draw}
+                    onMouseUp={endDraw}
+                    onMouseLeave={endDraw}
+                    onTouchStart={startDraw}
+                    onTouchMove={draw}
+                    onTouchEnd={endDraw}
+                  />
+                </div>
+              )}
             </div>
 
             <label className="flex items-start gap-3 text-sm text-zinc-700">
@@ -287,7 +361,7 @@ export function ContractSignPage() {
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={submitting || !consent || !signerName.trim()}
+              disabled={submitting || !consent || !signerName.trim() || !hasValidSignature}
               className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-zinc-900 text-white text-sm font-semibold hover:bg-zinc-800 disabled:opacity-50 transition-colors"
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
