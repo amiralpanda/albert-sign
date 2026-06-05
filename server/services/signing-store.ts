@@ -304,7 +304,9 @@ export async function getDocumentContext(documentId: string): Promise<SigningDoc
 /** Prod: snapshot in Blob — no file-store */
 export function getDocumentContextForRequest(request: SigningRequest): SigningDocContext | null {
   const snap = request.documentSnapshot
-  if (!snap?.clientName) return null
+  if (!snap) return null
+  const clientName = snap.clientName || snap.variables?.clientName
+  if (!clientName) return null
   return {
     doc: {
       id: request.documentId,
@@ -313,7 +315,7 @@ export function getDocumentContextForRequest(request: SigningRequest): SigningDo
       title: snap.title,
       variables: snap.variables,
     },
-    clientName: snap.clientName,
+    clientName,
     slug: request.clientSlug,
   }
 }

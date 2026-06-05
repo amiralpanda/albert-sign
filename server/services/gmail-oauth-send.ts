@@ -3,6 +3,7 @@ import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { google } from 'googleapis'
 import type { OAuth2Client } from 'google-auth-library'
+import { encodeHeaderValue, formatMailboxHeader } from './mail-headers.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = join(__dirname, '..', '..')
@@ -70,17 +71,11 @@ export interface GmailOAuthSendOptions {
   attachments?: { filename: string; content: Buffer }[]
 }
 
-function encodeHeader(value: string): string {
-  return /[^\x00-\x7F]/.test(value)
-    ? `=?UTF-8?B?${Buffer.from(value, 'utf8').toString('base64')}?=`
-    : value
-}
-
 function buildRawMessage(options: GmailOAuthSendOptions): string {
   const lines: string[] = [
-    `From: ${options.from}`,
+    `From: ${formatMailboxHeader(options.from)}`,
     `To: ${options.to}`,
-    `Subject: ${encodeHeader(options.subject)}`,
+    `Subject: ${encodeHeaderValue(options.subject)}`,
   ]
   if (options.cc) lines.push(`Cc: ${options.cc}`)
   lines.push('MIME-Version: 1.0')
