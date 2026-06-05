@@ -186,7 +186,14 @@
 
     .signature-col {
       width: 45%;
-      text-align: center;
+    }
+
+    .signature-col--editor {
+      text-align: left;
+    }
+
+    .signature-col--client {
+      text-align: right;
     }
 
     .signature-col .label {
@@ -204,7 +211,17 @@
       display: block;
       max-height: 70px;
       max-width: 100%;
-      margin: 0 auto 0.3em;
+      margin-bottom: 0.3em;
+    }
+
+    .signature-col--editor .signature-img {
+      margin-left: 0;
+      margin-right: auto;
+    }
+
+    .signature-col--client .signature-img {
+      margin-left: auto;
+      margin-right: 0;
     }
 
     .signature-col .signature-name {
@@ -713,7 +730,7 @@
   </p>
 
   <div class="signature-block">
-    <div class="signature-col">
+    <div class="signature-col signature-col--editor">
       <div class="label">Pour l'Éditeur</div>
       {{#if editorSignatureImage}}
         <img src="{{{editorSignatureImage}}}" alt="Signature" class="signature-img" />
@@ -724,7 +741,7 @@
         <p>Nom / Prénom</p>
       {{/if}}
     </div>
-    <div class="signature-col">
+    <div class="signature-col signature-col--client">
       <div class="label">Pour le Client</div>
       {{#if clientSignatureImage}}
         <img src="{{{clientSignatureImage}}}" alt="Signature" class="signature-img" />
