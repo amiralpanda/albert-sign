@@ -41,7 +41,7 @@ function compileTemplate(fileName: string, context: SigningEmailContext): string
 }
 
 function getFromAddress(): string {
-  return process.env.SIGNING_FROM || 'Atome <signing@sign.atome.software>'
+  return process.env.SIGNING_FROM || 'Atome <noreply@sign.atome.software>'
 }
 
 function getInviterName(): string {
