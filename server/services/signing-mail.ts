@@ -48,6 +48,15 @@ function getInviterName(): string {
   return process.env.SIGNING_INVITER_NAME || 'Jérémy Foucray'
 }
 
+/** CC on invitation + completion emails (comma-separated). */
+function getSigningMailCc(): string {
+  return (
+    process.env.SIGNING_MAIL_CC ||
+    process.env.SIGNING_COMPLETION_CC ||
+    'jeremy@atome.sh,finance@atome.sh'
+  )
+}
+
 async function deliverMail(options: {
   to: string
   cc?: string
@@ -98,7 +107,7 @@ export async function sendSigningInvitationEmail(params: {
   const html = compileTemplate(INVITE_TEMPLATE[locale], context)
   const subject = invitationSubject(locale, params.documentTitle)
 
-  return deliverMail({ to: params.to, subject, html })
+  return deliverMail({ to: params.to, cc: getSigningMailCc(), subject, html })
 }
 
 export async function sendSigningCompletionEmail(params: {
@@ -112,8 +121,6 @@ export async function sendSigningCompletionEmail(params: {
   pdfFilename: string
 }): Promise<{ sent: boolean; error?: string }> {
   const locale = resolveSigningLocale(params.templateName)
-  const cc = process.env.SIGNING_COMPLETION_CC || 'finance@atome.sh'
-
   const context: SigningEmailContext = {
     inviterName: getInviterName(),
     documentTitle: params.documentTitle,
@@ -129,7 +136,7 @@ export async function sendSigningCompletionEmail(params: {
 
   return deliverMail({
     to: params.to,
-    cc,
+    cc: getSigningMailCc(),
     subject,
     html,
     attachments: [{ filename: params.pdfFilename, content: params.pdfBuffer }],
