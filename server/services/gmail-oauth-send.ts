@@ -2,6 +2,7 @@ import { readFileSync, existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { google } from 'googleapis'
+import type { OAuth2Client } from 'google-auth-library'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = join(__dirname, '..', '..')
@@ -138,7 +139,7 @@ export async function sendViaGmailOAuth(
       scope: creds.scopes?.join(' '),
     })
 
-    const gmail = google.gmail({ version: 'v1', auth: oauth2 })
+    const gmail = google.gmail({ version: 'v1', auth: oauth2 as OAuth2Client })
     await gmail.users.messages.send({
       userId: 'me',
       requestBody: { raw: buildRawMessage(options) },
