@@ -1,22 +1,43 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import {
+  handleCancelRequest,
+  handleCreateRequest,
+  handleListRequests,
+  handleResendInvitation,
+  handleStatus,
+} from '../server/handlers/signing-admin.js'
 
-type Handler = (req: VercelRequest, res: VercelResponse) => Promise<unknown>
-
-let signingHandler: Handler | null = null
-
-async function getSigningHandler(): Promise<Handler> {
-  if (!signingHandler) {
-    const [{ createSigningApp }, { default: serverless }] = await Promise.all([
-      import('../server/signing-app.js'),
-      import('serverless-http'),
-    ])
-    signingHandler = serverless(createSigningApp()) as Handler
-  }
-  return signingHandler
+function pathname(req: VercelRequest): string {
+  const raw = req.url || '/'
+  return raw.split('?')[0] || '/'
 }
 
-/** Admin routes only (requests, status, resend). Public GET/POST use api/signing/[token]*. */
+/** Admin signing routes — lightweight handler (no Express cold start). */
 export default async function vercelHandler(req: VercelRequest, res: VercelResponse) {
-  const handler = await getSigningHandler()
-  return handler(req, res)
+  const path = pathname(req)
+  const method = req.method || 'GET'
+
+  if (path === '/api/signing/resend-invitation' && method === 'POST') {
+    return handleResendInvitation(req, res)
+  }
+
+  if (path.startsWith('/api/signing/status/') && method === 'GET') {
+    const documentId = decodeURIComponent(path.slice('/api/signing/status/'.length))
+    return handleStatus(req, res, documentId)
+  }
+
+  if (path === '/api/signing/requests' && method === 'GET') {
+    return handleListRequests(req, res)
+  }
+
+  if (path === '/api/signing/requests' && method === 'POST') {
+    return handleCreateRequest(req, res)
+  }
+
+  const deleteMatch = path.match(/^\/api\/signing\/requests\/([^/]+)$/)
+  if (deleteMatch && method === 'DELETE') {
+    return handleCancelRequest(req, res, decodeURIComponent(deleteMatch[1]))
+  }
+
+  res.status(404).json({ error: 'Not found' })
 }
