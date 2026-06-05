@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
-import { Check, Loader2, FileText, AlertTriangle } from '@/components/ui/Icon'
+import { Check, Loader2, FileText, AlertCircle } from '@/components/ui/Icon'
 import { SigningStatusPage } from '@/components/SigningStatusPage'
 import { apiUrl } from '@/lib/api-base'
 import {
@@ -190,7 +190,7 @@ export function ContractSignPage() {
       <SigningStatusPage
         icon={
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-red-700">
-            <AlertTriangle className="h-7 w-7" />
+            <AlertCircle className="h-7 w-7" />
           </div>
         }
         title="Impossible d'ouvrir ce contrat"

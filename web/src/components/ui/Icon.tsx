@@ -16,7 +16,9 @@ import {
   Idea01Icon,
   Settings01Icon,
   AlertCircleIcon as AlertCircleHugeIcon,
+  InformationCircleIcon,
   Link01Icon,
+  SquareArrowUpRightIcon,
   Copy01Icon,
   Refresh01Icon,
   CheckmarkCircle01Icon,
@@ -109,7 +111,7 @@ export function AlertTriangle({ className }: { className?: string }) {
 }
 
 export function ExternalLink({ className }: { className?: string }) {
-  return <HugeiconsIcon icon={Link01Icon} className={className} />
+  return <HugeiconsIcon icon={SquareArrowUpRightIcon} className={className} />
 }
 
 export function Link({ className }: { className?: string }) {
@@ -251,6 +253,10 @@ export function Target({ className }: { className?: string }) {
 
 export function AlertCircle({ className }: { className?: string }) {
   return <HugeiconsIcon icon={AlertCircleHugeIcon} className={className} />
+}
+
+export function InfoCircle({ className }: { className?: string }) {
+  return <HugeiconsIcon icon={InformationCircleIcon} className={className} />
 }
 
 export function CheckCircle({ className }: { className?: string }) {
