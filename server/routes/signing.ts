@@ -17,6 +17,7 @@ import {
   type SigningDocumentSnapshot,
 } from '../services/signing-store.js'
 import { sendSigningInvitationEmail } from '../services/signing-mail.js'
+import { ensureEditorSignatureVariables } from '../services/editor-signature.js'
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -105,6 +106,9 @@ signingRouter.post('/requests', async (req, res) => {
     if (!requiresSignatureForTemplate(ctx.doc.templateName)) {
       return res.status(400).json({ error: 'This document type does not require electronic signature' })
     }
+
+    ctx.doc.variables = ensureEditorSignatureVariables(ctx.doc.variables)
+    if (snapshot) snapshot.variables = { ...ctx.doc.variables }
 
     const documentHash = hashDocument(ctx.doc.templateName, ctx.doc.variables)
     if (!documentHash) {

@@ -45,8 +45,9 @@ if (!blobToken) {
 
 const { hashDocument } = await import('../server/services/document-hash.ts')
 const { generatePreviewPdf } = await import('../server/services/signing-preview.ts')
+const { ensureEditorSignatureVariables } = await import('../server/services/editor-signature.ts')
 
-const variables = {
+const variables = ensureEditorSignatureVariables({
   clientName: 'Atome SAS',
   legalForm: 'SAS',
   address: 'Paris, France',
@@ -62,11 +63,7 @@ const variables = {
   heuresParametrage: '10',
   heuresSupport: '4',
   tarifSupportSupp: '150',
-  editorName: 'Jérémy Foucray',
-  editorDate: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
-  editorSignatureImage:
-    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
-}
+})
 
 const templateName = 'design-partnership'
 const documentHash = hashDocument(templateName, variables)
@@ -160,6 +157,7 @@ async function sendViaResend() {
     body: JSON.stringify({
       from: process.env.RESEND_FROM || 'onboarding@resend.dev',
       to: [to],
+      cc: (process.env.SIGNING_MAIL_CC || 'jeremy@atome.sh,finance@atome.sh').split(',').map(s => s.trim()),
       subject,
       html,
     }),
