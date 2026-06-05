@@ -56,6 +56,7 @@ export interface SigningRequest {
   audit?: SigningAudit
   invitationEmailSent?: boolean
   completionEmailSent?: boolean
+  completionEmailError?: string
   /** Frozen contract at invitation time (required on Vercel / Blob) */
   documentSnapshot?: SigningDocumentSnapshot
   /** Public Blob URL — unsigned PDF for instant client preview */

@@ -65,6 +65,24 @@ async function finalizeSignature(params: {
 
   await blobPutSignedPdf(request.token, pdfBuffer)
 
+  const { sendSigningCompletionEmail } = await import('../services/signing-mail.js')
+  const completionEmail = await sendSigningCompletionEmail({
+    to: email,
+    templateName,
+    documentTitle: signedDoc.title,
+    clientName: ctx.clientName,
+    signerName,
+    signedAt: signedDate,
+    pdfBuffer,
+    pdfFilename: filename,
+  })
+
+  request.completionEmailSent = completionEmail.sent
+  if (!completionEmail.sent) {
+    request.completionEmailError = completionEmail.error
+    console.error('[signing] completion email failed:', completionEmail.error)
+  }
+
   const atome = await import('../services/atome-client.js')
   const file = await atome.uploadFile(filename, 'application/pdf', pdfBuffer, {
     isOrganizationAccessible: true,
@@ -105,22 +123,12 @@ async function finalizeSignature(params: {
 
   await completeSigningRequest(request, audit, file.id)
 
-  const { sendSigningCompletionEmail } = await import('../services/signing-mail.js')
-  await sendSigningCompletionEmail({
-    to: email,
-    templateName,
-    documentTitle: signedDoc.title,
-    clientName: ctx.clientName,
-    signerName,
-    signedAt: signedDate,
-    pdfBuffer,
-    pdfFilename: filename,
-  })
-
   console.log('Signature finalized', {
     requestId: request.id,
     atomeFileId: file.id,
     atomeSync: syncResult,
+    completionEmailSent: completionEmail.sent,
+    completionEmailError: completionEmail.error,
   })
 }
 
