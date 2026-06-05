@@ -41,7 +41,7 @@ function compileTemplate(fileName: string, context: SigningEmailContext): string
 }
 
 function getFromAddress(): string {
-  return process.env.SIGNING_FROM || 'Jérémy Foucray <jeremy@atome.sh>'
+  return process.env.SIGNING_FROM || 'Atome <sign@atome.software>'
 }
 
 function getInviterName(): string {
