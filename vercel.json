@@ -12,7 +12,12 @@
     "api/signing/[token].ts": {
       "maxDuration": 15,
       "memory": 256,
-      "includeFiles": "methodology/templates/**,config/**"
+      "includeFiles": "methodology/templates/**,config/**,methodology/assets/**"
+    },
+    "api/signing/[token]/document.ts": {
+      "maxDuration": 15,
+      "memory": 256,
+      "includeFiles": "methodology/templates/**,config/**,methodology/assets/**"
     },
     "api/signing/preview/[token].ts": {
       "maxDuration": 60,

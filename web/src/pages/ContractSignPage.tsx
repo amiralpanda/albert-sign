@@ -14,7 +14,10 @@ interface SigningPayload {
   clientName: string
   signerEmail: string
   expiresAt: string
-  html: string
+  documentUrl: string
+  previewPdfUrl?: string | null
+  /** @deprecated inline HTML — use documentUrl */
+  html?: string
 }
 
 type SignatureMode = 'type' | 'draw'
@@ -43,18 +46,35 @@ export function ContractSignPage() {
     void ensureSignatureFont()
   }, [])
 
-  useEffect(() => {
+  const [documentReady, setDocumentReady] = useState(false)
+  const [documentError, setDocumentError] = useState<string | null>(null)
+
+  const loadPayload = useCallback(async () => {
     if (!token) return
-    fetch(apiUrl(`/api/signing/${token}`))
-      .then(async res => {
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error || 'Lien invalide')
-        setPayload(data)
-        setSignerEmail(data.signerEmail || '')
-      })
-      .catch(err => setError(err instanceof Error ? err.message : 'Erreur de chargement'))
-      .finally(() => setLoading(false))
+    setLoading(true)
+    setError(null)
+    setDocumentReady(false)
+    setDocumentError(null)
+    try {
+      const res = await fetch(apiUrl(`/api/signing/${token}`))
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Lien invalide')
+      if (!data.documentUrl && !data.html) {
+        throw new Error('Contrat indisponible — réessayez dans un instant')
+      }
+      setPayload(data)
+      setSignerEmail(data.signerEmail || '')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur de chargement')
+      setPayload(null)
+    } finally {
+      setLoading(false)
+    }
   }, [token])
+
+  useEffect(() => {
+    void loadPayload()
+  }, [loadPayload])
 
   const resizeCanvas = useCallback(() => {
     const canvas = canvasRef.current
@@ -197,8 +217,9 @@ export function ContractSignPage() {
         description={error}
         hint="Contactez la personne qui vous a invité, ou l'équipe Atome pour obtenir un nouveau lien."
         primaryAction={{
-          label: 'Découvrir Atome',
-          href: 'https://atome.sh',
+          label: 'Réessayer',
+          href: window.location.href,
+          external: false,
         }}
         secondaryAction={{
           label: "Contacter l'équipe",
@@ -223,7 +244,10 @@ export function ContractSignPage() {
     )
   }
 
-  if (!payload?.html) return null
+  if (!payload) return null
+
+  const documentFrameUrl = payload.documentUrl || undefined
+  const legacyHtml = !documentFrameUrl ? payload.html : undefined
 
   return (
     <div className="min-h-screen bg-zinc-100 flex flex-col">
@@ -243,13 +267,44 @@ export function ContractSignPage() {
           className="lg:flex-1 min-h-0 flex flex-col bg-white lg:m-4 lg:rounded-lg lg:border lg:border-zinc-200 lg:shadow-sm overflow-hidden"
           aria-label="Contrat"
         >
-          <div className="flex-1 min-h-[50vh] lg:min-h-0 overflow-hidden">
-            <iframe
-              title="Contrat"
-              srcDoc={payload.html}
-              className="w-full h-full min-h-[50vh] lg:min-h-[480px] border-0"
-              sandbox="allow-same-origin"
-            />
+          <div className="flex-1 min-h-[50vh] lg:min-h-0 overflow-hidden relative">
+            {documentError && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 bg-zinc-50 text-center z-10">
+                <p className="text-sm text-zinc-600">{documentError}</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDocumentReady(false)
+                    setDocumentError(null)
+                  }}
+                  className="text-sm font-medium text-zinc-900 underline"
+                >
+                  Réafficher le contrat
+                </button>
+              </div>
+            )}
+            {!documentReady && !documentError && (
+              <div className="absolute inset-0 flex items-center justify-center bg-zinc-50 z-10">
+                <Loader2 className="w-6 h-6 animate-spin text-zinc-400" />
+              </div>
+            )}
+            {documentFrameUrl ? (
+              <iframe
+                title="Contrat"
+                src={documentFrameUrl}
+                className="w-full h-full min-h-[50vh] lg:min-h-[480px] border-0"
+                onLoad={() => setDocumentReady(true)}
+                onError={() => setDocumentError('Le contrat n\'a pas pu s\'afficher dans cette fenêtre.')}
+              />
+            ) : legacyHtml ? (
+              <iframe
+                title="Contrat"
+                srcDoc={legacyHtml}
+                className="w-full h-full min-h-[50vh] lg:min-h-[480px] border-0"
+                sandbox="allow-same-origin"
+                onLoad={() => setDocumentReady(true)}
+              />
+            ) : null}
           </div>
         </section>
 

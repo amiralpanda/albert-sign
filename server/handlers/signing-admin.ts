@@ -15,6 +15,7 @@ import {
 } from '../services/signing-store.js'
 import { sendSigningInvitationEmail } from '../services/signing-mail.js'
 import { ensureEditorSignatureVariables } from '../services/editor-signature.js'
+import { schedulePreviewPdf } from '../services/signing-preview.js'
 
 function json(res: VercelResponse, status: number, body: unknown) {
   res.status(status).json(body)
@@ -112,6 +113,8 @@ export async function handleCreateRequest(req: VercelRequest, res: VercelRespons
       signerName,
       documentSnapshot: snapshot,
     })
+
+    schedulePreviewPdf(request)
 
     const signUrl = buildSignUrl(request.token)
     let emailResult: { sent: boolean; error?: string } = { sent: false }
