@@ -17,7 +17,6 @@ import {
   type SigningDocumentSnapshot,
 } from '../services/signing-store.js'
 import { sendSigningInvitationEmail } from '../services/signing-mail.js'
-import { handleSigningCompletePost } from '../handlers/signing-complete.js'
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -252,5 +251,6 @@ signingRouter.get('/:token', async (req, res) => {
 })
 
 signingRouter.post('/:token/sign', async (req, res) => {
+  const { handleSigningCompletePost } = await import('../handlers/signing-complete.js')
   return handleSigningCompletePost(req as unknown as VercelRequest, res as unknown as VercelResponse, req.params.token)
 })
