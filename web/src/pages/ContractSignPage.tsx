@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
-import { Check, Loader2, FileText } from '@/components/ui/Icon'
+import { Check, Loader2, FileText, AlertTriangle } from '@/components/ui/Icon'
+import { SigningStatusPage } from '@/components/SigningStatusPage'
 import { apiUrl } from '@/lib/api-base'
 import {
   ensureSignatureFont,
@@ -186,12 +187,25 @@ export function ContractSignPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-6">
-        <div className="max-w-md text-center">
-          <p className="text-lg font-medium text-zinc-900">{error}</p>
-          <p className="mt-2 text-sm text-zinc-500">Contactez Atome si vous avez besoin d&apos;un nouveau lien.</p>
-        </div>
-      </div>
+      <SigningStatusPage
+        icon={
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-red-700">
+            <AlertTriangle className="h-7 w-7" />
+          </div>
+        }
+        title="Impossible d'ouvrir ce contrat"
+        description={error}
+        hint="Contactez la personne qui vous a invité, ou l'équipe Atome pour obtenir un nouveau lien."
+        primaryAction={{
+          label: 'Découvrir Atome',
+          href: 'https://atome.sh',
+        }}
+        secondaryAction={{
+          label: "Contacter l'équipe",
+          href: 'mailto:jeremy@atome.sh?subject=Nouveau%20lien%20de%20signature',
+          external: false,
+        }}
+      />
     )
   }
 
