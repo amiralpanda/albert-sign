@@ -6,7 +6,7 @@ export function getResendFromAddress(): string {
   return (
     process.env.RESEND_FROM ||
     process.env.SIGNING_FROM ||
-    'Jérémy Foucray <jeremy@atome.sh>'
+    'Jérémy Foucray <jeremy@atome.software>'
   )
 }
 
